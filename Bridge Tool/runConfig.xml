@@ -1,0 +1,24 @@
+<run xmlns="http://www.wbartley.com/BridgeTool"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:schemaLocation="http://www.wbartley.com/BridgeTool bridgetool.xsd"
+     runLength="1000"
+     dumpEachSample="false"
+     dealer="W"
+     specificCards="N:SK92H6DKQ762CKQ83"
+     vulnerability="NS">
+	<constraint>
+		<AND>
+			<DIST dir="W" suit="H" min="8" max="9"/>
+			<HCP dir="W" min="6" max="10"/>
+			<DEFENSE dir="W" max="3"/>
+			<DIST dir="S" suit="S" max="3"/>
+			<DIST dir="S" suit="H" min="3"/>
+			<DIST dir="S" suit="D" max="4"/>
+			<DIST dir="S" suit="C" max="4"/>
+			<DEFENSE dir="S" min="2"/>
+		</AND>
+	</constraint>
+	<collectStats>
+		<CONTRACT dir="W" contract="4H" computeNsScore="true"/>
+	</collectStats>
+</run>

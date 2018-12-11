@@ -1,0 +1,37 @@
+<AND>
+	<NOT>
+		<include filename="isNt.xml" dir="%dir%" minHCP="15" maxHCP="17"/>
+	</NOT>
+	<NOT>
+		<include filename="isNt.xml" dir="%dir%" minHCP="20" maxHCP="21"/>
+	</NOT>
+	<HCP dir="%dir%" min="%minHCP%" max="%maxHCP%"/>
+	<DEFENSE dir="%dir%" min="%minDefense%"/>
+	<DIST dir="%dir%" suit="H" min="%minHearts%" max="%maxHearts%"/>
+	<DIST dir="%dir%" suit="S" min="%minSpades%" max="%maxSpades%"/>
+	<OR>
+		<AND>
+			<DIST dir="%dir%" suit="C" min="3" max="3"/>
+			<DIST dir="%dir%" suit="D" max="3"/>
+		</AND>
+		<AND>
+			<DIST dir="%dir%" suit="C" min="4" max="4"/>
+			<DIST dir="%dir%" suit="D" max="3"/>
+		</AND>
+		<AND>
+			<DIST dir="%dir%" suit="C" min="5" max="5"/>
+			<OR>
+				<AND>
+					<HCP dir="%dir%" min="17"/>
+					<DIST dir="%dir%" suit="D" min="4" max="4"/>
+				</AND>
+				<DIST dir="%dir%" suit="D" max="3"/>
+			</OR>
+		</AND>
+		<AND>
+			<DIST dir="%dir%" suit="C" min="6" max="6"/>
+			<DIST dir="%dir%" suit="D" max="5"/>
+		</AND>
+		<DIST dir="%dir%" suit="C" min="7"/>
+	</OR>
+</AND>

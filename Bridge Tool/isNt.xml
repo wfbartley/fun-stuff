@@ -1,0 +1,15 @@
+<AND>
+	<HCP dir="%dir%" min="%minHCP%" max="%maxHCP%"/>
+	<OR>
+		<AND>
+			<DIST dir="%dir%" suit="S" min="2" max="4"/>
+			<DIST dir="%dir%" suit="H" min="3" max="4"/>
+		</AND>
+		<AND>
+			<DIST dir="%dir%" suit="S" min="3" max="4"/>
+			<DIST dir="%dir%" suit="H" min="2" max="4"/>
+		</AND>
+	</OR>
+	<DIST dir="%dir%" suit="D" min="2" max="5"/>
+	<DIST dir="%dir%" suit="C" min="2" max="5"/>
+</AND>

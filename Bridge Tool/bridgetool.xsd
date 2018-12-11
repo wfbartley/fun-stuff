@@ -1,0 +1,232 @@
+<?xml version="1.0"?>
+<xs:schema targetNamespace="http://www.wbartley.com/BridgeTool"
+           xmlns="http://www.wbartley.com/BridgeTool"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+ 	<xs:element name="run">
+		<xs:complexType>
+			<xs:choice maxOccurs="2">
+				<xs:element name="include" type="includeType" minOccurs="0" maxOccurs="2"/>
+				<xs:element name="constraint" type="constraintType" minOccurs="1" maxOccurs="1"/>
+				<xs:element name="collectStats" type="collectStatsType" minOccurs="0" maxOccurs="1"/>
+			</xs:choice>
+			<xs:attribute name="runLength" type="xs:positiveInteger" use="required"/>
+			<xs:attribute name="dumpEachSample" type="xs:boolean"/>
+			<xs:attribute name="specificCards" type="xs:normalizedString"/>
+			<xs:attribute name="pbnFilename" type="xs:normalizedString"/>
+			<xs:attribute name="linFilename" type="xs:normalizedString"/>
+			<xs:attribute name="dealer" type="dealerEnum"/>
+			<xs:attribute name="vulnerability" type="vulnerabilityEnum"/>
+		</xs:complexType>
+	</xs:element>
+	
+	<xs:complexType name="includeType">
+		<xs:attribute name="filename" type="xs:normalizedString" use="required"/>
+		<xs:anyAttribute processContents="lax"/>
+	</xs:complexType>
+	
+	<xs:simpleType name="dealerEnum">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="N"/>
+			<xs:enumeration value="E"/>
+			<xs:enumeration value="S"/>
+			<xs:enumeration value="W"/>
+			<xs:enumeration value="random"/>
+		</xs:restriction>
+	</xs:simpleType>
+	
+	<xs:simpleType name="vulnerabilityEnum">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="None"/>
+			<xs:enumeration value="NS"/>
+			<xs:enumeration value="EW"/>
+			<xs:enumeration value="All"/>
+			<xs:enumeration value="random"/>
+		</xs:restriction>
+	</xs:simpleType>
+	
+	<xs:simpleType name="handDirectionEnum">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="N"/>
+			<xs:enumeration value="E"/>
+			<xs:enumeration value="S"/>
+			<xs:enumeration value="W"/>
+		</xs:restriction>
+	</xs:simpleType>
+	
+	<xs:simpleType name="orientationEnum">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="NS"/>
+			<xs:enumeration value="EW"/>
+		</xs:restriction>
+	</xs:simpleType>
+	
+	<xs:simpleType name="suitEnum">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="S"/>
+			<xs:enumeration value="H"/>
+			<xs:enumeration value="D"/>
+			<xs:enumeration value="C"/>
+		</xs:restriction>
+	</xs:simpleType>
+	
+	<xs:simpleType name="strainEnum">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="S"/>
+			<xs:enumeration value="H"/>
+			<xs:enumeration value="D"/>
+			<xs:enumeration value="C"/>
+			<xs:enumeration value="N"/>
+		</xs:restriction>
+	</xs:simpleType>
+	
+	<xs:complexType name="constraintType">
+		<xs:choice maxOccurs="1">
+			<xs:element name="include" type="includeType"/>
+			<xs:element name="AND" type="constraintAndType"/>
+			<xs:element name="OR" type="constraintOrType"/>
+			<xs:element name="NOT" type="constraintNotType"/>
+			<xs:element name="HCP" type="constraintHcpType"/>
+			<xs:element name="FIT" type="constraintFitType"/>
+			<xs:element name="DIST" type="constraintDistType"/>
+			<xs:element name="POINTS" type="constraintPointsType"/>
+			<xs:element name="DEFENSE" type="constraintDefenseType"/>
+			<xs:element name="MAKES" type="constraintMakesType"/>
+			<xs:element name="DOWN" type="constraintDownType"/>
+			<xs:element name="M_OF_TOP_N" type="constraintMOfTopNType"/>
+		</xs:choice>
+	</xs:complexType>
+	
+	<xs:complexType name="constraintAndType">
+		<xs:choice minOccurs="2" maxOccurs="unbounded">
+			<xs:element name="include" type="includeType"/>
+			<xs:element name="OR" type="constraintOrType"/>
+			<xs:element name="NOT" type="constraintNotType"/>
+			<xs:element name="HCP" type="constraintHcpType"/>
+			<xs:element name="FIT" type="constraintFitType"/>
+			<xs:element name="DIST" type="constraintDistType"/>
+			<xs:element name="POINTS" type="constraintPointsType"/>
+			<xs:element name="DEFENSE" type="constraintDefenseType"/>
+			<xs:element name="MAKES" type="constraintMakesType"/>
+			<xs:element name="DOWN" type="constraintDownType"/>
+			<xs:element name="M_OF_TOP_N" type="constraintMOfTopNType"/>
+		</xs:choice>
+	</xs:complexType>
+	
+	<xs:complexType name="constraintOrType">
+		<xs:choice minOccurs="2" maxOccurs="unbounded">
+			<xs:element name="include" type="includeType"/>
+			<xs:element name="AND" type="constraintAndType"/>
+			<xs:element name="NOT" type="constraintNotType"/>
+			<xs:element name="HCP" type="constraintHcpType"/>
+			<xs:element name="FIT" type="constraintFitType"/>
+			<xs:element name="DIST" type="constraintDistType"/>
+			<xs:element name="POINTS" type="constraintPointsType"/>
+			<xs:element name="DEFENSE" type="constraintDefenseType"/>
+			<xs:element name="MAKES" type="constraintMakesType"/>
+			<xs:element name="DOWN" type="constraintDownType"/>
+			<xs:element name="M_OF_TOP_N" type="constraintMOfTopNType"/>
+		</xs:choice>
+	</xs:complexType>
+	
+	<xs:complexType name="constraintNotType">
+		<xs:choice minOccurs="1" maxOccurs="1">
+			<xs:element name="include" type="includeType"/>
+			<xs:element name="AND" type="constraintAndType"/>
+			<xs:element name="OR" type="constraintOrType"/>
+			<xs:element name="HCP" type="constraintHcpType"/>
+			<xs:element name="FIT" type="constraintFitType"/>
+			<xs:element name="DIST" type="constraintDistType"/>
+			<xs:element name="POINTS" type="constraintPointsType"/>
+			<xs:element name="DEFENSE" type="constraintDefenseType"/>
+			<xs:element name="MAKES" type="constraintMakesType"/>
+			<xs:element name="DOWN" type="constraintDownType"/>
+			<xs:element name="M_OF_TOP_N" type="constraintMOfTopNType"/>
+		</xs:choice>
+	</xs:complexType>
+	
+	<xs:complexType name="constraintHcpType">
+		<xs:attribute name="dir" type="handDirectionEnum" use="required"/>
+		<xs:attribute name="suit" type="suitEnum"/>
+		<xs:attribute name="min" type="xs:nonNegativeInteger"/>
+		<xs:attribute name="max" type="xs:nonNegativeInteger"/>
+	</xs:complexType>
+	
+	<xs:complexType name="constraintDistType">
+		<xs:attribute name="dir" type="handDirectionEnum" use="required"/>
+		<xs:attribute name="suit" type="suitEnum" use="required"/>
+		<xs:attribute name="min" type="xs:nonNegativeInteger"/>
+		<xs:attribute name="max" type="xs:nonNegativeInteger"/>
+		<xs:attribute name="nonSuitSpecific" type="xs:nonNegativeInteger"/>
+	</xs:complexType>
+	
+	<xs:complexType name="constraintFitType">
+		<xs:attribute name="orientation" type="orientationEnum" use="required"/>
+		<xs:attribute name="suit" type="suitEnum" use="required"/>
+		<xs:attribute name="min" type="xs:nonNegativeInteger"/>
+		<xs:attribute name="max" type="xs:nonNegativeInteger"/>
+	</xs:complexType>
+	
+	<xs:complexType name="constraintPointsType">
+		<xs:attribute name="dir" type="handDirectionEnum" use="required"/>
+		<xs:attribute name="suit" type="suitEnum"/>
+		<xs:attribute name="min" type="xs:nonNegativeInteger"/>
+		<xs:attribute name="max" type="xs:nonNegativeInteger"/>
+	</xs:complexType>
+	
+	<xs:complexType name="constraintDefenseType">
+		<xs:attribute name="dir" type="handDirectionEnum" use="required"/>
+		<xs:attribute name="min" type="xs:nonNegativeInteger"/>
+		<xs:attribute name="max" type="xs:nonNegativeInteger"/>
+	</xs:complexType>
+	
+	<xs:complexType name="constraintMakesType">
+		<xs:attribute name="dirs" type="xs:normalizedString" use="required"/>
+		<xs:attribute name="contract" type="xs:normalizedString" use="required"/>
+		<xs:attribute name="exactly" type="xs:boolean"/>
+	</xs:complexType>
+	
+	<xs:complexType name="constraintDownType">
+		<xs:attribute name="dirs" type="xs:normalizedString" use="required"/>
+		<xs:attribute name="contract" type="xs:normalizedString" use="required"/>
+		<xs:attribute name="numDown" type="xs:positiveInteger" use="required"/>
+		<xs:attribute name="exactly" type="xs:boolean"/>
+	</xs:complexType>
+	
+	<xs:complexType name="constraintMOfTopNType">
+		<xs:attribute name="dir" type="handDirectionEnum" use="required"/>
+		<xs:attribute name="suit" type="suitEnum" use="required"/>
+		<xs:attribute name="m" type="xs:positiveInteger" use="required"/>
+		<xs:attribute name="n" type="xs:positiveInteger" use="required"/>
+	</xs:complexType>
+	
+	<xs:complexType name="collectStatsType">
+		<xs:choice maxOccurs="unbounded">
+			<xs:element name="HCP" type="statsHcpType"/>
+			<xs:element name="DIST" type="statsDistType"/>
+			<xs:element name="POINTS" type="statsPointsType"/>
+			<xs:element name="CONTRACT" type="statsContractType"/>
+		</xs:choice>
+	</xs:complexType>
+	
+	<xs:complexType name="statsHcpType">
+		<xs:attribute name="dir" type="handDirectionEnum" use="required"/>
+	</xs:complexType>
+	
+	<xs:complexType name="statsDistType">
+		<xs:attribute name="dir" type="handDirectionEnum"/>
+		<xs:attribute name="suit" type="suitEnum"/>
+	</xs:complexType>
+	
+	<xs:complexType name="statsPointsType">
+		<xs:attribute name="dir" type="handDirectionEnum"/>
+	</xs:complexType>
+	
+	<xs:complexType name="statsContractType">
+		<xs:attribute name="dir" type="handDirectionEnum" use="required"/>
+		<xs:attribute name="contract" type="xs:normalizedString" use="required"/>
+		<xs:attribute name="exactly" type="xs:boolean" use="optional"/>
+		<xs:attribute name="computeNsScore" type="xs:boolean" use="optional"/>
+		<xs:attribute name="numTricksToDouble" type="xs:nonNegativeInteger" use="optional"/>
+	</xs:complexType>
+</xs:schema>

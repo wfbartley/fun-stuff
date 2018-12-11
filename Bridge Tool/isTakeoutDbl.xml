@@ -1,0 +1,10 @@
+<AND>
+	<POINTS dir="%dir%" min="13"/>
+	<DIST dir="%dir%" suit="%suit%" max="2"/>
+	<OR>
+		<DIST dir="%dir%" nonSuitSpecific="5440"/>
+		<DIST dir="%dir%" nonSuitSpecific="4441"/>
+		<DIST dir="%dir%" nonSuitSpecific="4432"/>
+		<DIST dir="%dir%" nonSuitSpecific="5431"/>
+	</OR>
+</AND>

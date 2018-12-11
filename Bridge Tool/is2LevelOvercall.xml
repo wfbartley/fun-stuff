@@ -1,0 +1,5 @@
+<AND>
+	<HCP dir="%dir%" min="10"/>
+	<DIST dir="%dir%" suit="%suit%" min="6"/>
+	<M_OF_TOP_N dir="%dir%" suit="%suit%" m="2" n="4"/>
+</AND>
