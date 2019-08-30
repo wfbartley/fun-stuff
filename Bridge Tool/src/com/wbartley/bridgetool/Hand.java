@@ -144,6 +144,7 @@ public class Hand {
 		for (int i = 0; i < 4; i++) {
 			cardsCopy >>= DEFENSIVE_TRICK_SHIFT;
 			result += DEFENSIVE_TRICKS_BY_MASK[(int)(cardsCopy & DEFENSIVE_TRICK_MASK)];
+			cardsCopy >>= (13-DEFENSIVE_TRICK_SHIFT);
 		}
 		return result;
 	}

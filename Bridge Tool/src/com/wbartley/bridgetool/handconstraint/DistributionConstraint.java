@@ -12,6 +12,7 @@ public class DistributionConstraint implements HandConstraint {
 	private Suit suit;
 	private int minDist = 0, maxDist = 13;
 	private int [] nonSuitSpecific = null;
+	private boolean atLeast = false;
 
 	@Override
 	public HandConstraint parseConstraint(Element element) throws ConstraintParseException {
@@ -28,17 +29,22 @@ public class DistributionConstraint implements HandConstraint {
 		String nonSuitSpecificStr = element.getAttribute("nonSuitSpecific");
 		int intValue;
 		if (!nonSuitSpecificStr.isEmpty()) {
-			if (nonSuitSpecificStr.length() == 4 && (intValue = Integer.parseInt(nonSuitSpecificStr)) != 0) {
-				result.nonSuitSpecific = new int [4];
+			int plusPos = nonSuitSpecificStr.indexOf("+");
+			if (plusPos != -1) {
+				result.atLeast = true;
+				nonSuitSpecificStr = nonSuitSpecificStr.substring(0, plusPos);
+			}
+			if ((intValue = Integer.parseInt(nonSuitSpecificStr)) != 0) {
+				result.nonSuitSpecific = new int [nonSuitSpecificStr.length()];
 				int sum = 0;
-				for (int i = 0; i < 4; i++) {
+				for (int i = 0; i < nonSuitSpecificStr.length(); i++) {
 					int digit = intValue % 10;
 					sum += digit;
 					result.nonSuitSpecific[i] = digit;
 					intValue /= 10;
 				}
-				if (sum != 13) {
-					throw new ConstraintParseException("NonSuitSpecific distribution digits must add to 13, e.g., 4432 or 5440");
+				if (sum > 13) {
+					throw new ConstraintParseException("NonSuitSpecific distribution total must be less than 13");
 				}
 			}
 			else {
@@ -96,7 +102,7 @@ public class DistributionConstraint implements HandConstraint {
 			for (int dist : nonSuitSpecific) {
 				boolean found = false;
 				for (int j = 0; j < numLeft && !found; j++) {
-					if (distribution[j] == dist) {
+					if (distribution[j] == dist || atLeast && distribution[j] >= dist) {
 						numLeft--;
 						distribution[j] = distribution[numLeft];
 						found = true;
@@ -104,7 +110,7 @@ public class DistributionConstraint implements HandConstraint {
 				}
 				if (!found) break;
 			}
-			return (numLeft == 0);
+			return (numLeft == (4-nonSuitSpecific.length));
 		}
 		else {
 			int dist = distribution[suit.ordinal()];

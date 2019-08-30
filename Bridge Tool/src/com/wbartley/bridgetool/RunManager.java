@@ -9,7 +9,7 @@ import com.wbartley.bridgetool.stats.RunStats;
 import com.wbartley.bridgetool.stats.Statistic;
 
 public class RunManager {
-	private static final int MAX_HANDS_PER_LIN_FILE = 32;
+	private static final int MAX_HANDS_PER_LIN_FILE = 10000;
     
 	public static void main(String [] args) {
 		RunConfig runConfig;

@@ -1,0 +1,38 @@
+<OR>
+	<AND>
+		<POINTS dir="S" min="12"/>
+		<DEFENSE dir="S" min="5"/>
+		<OR>
+			<AND>
+				<DIST dir="S" suit="H" min="5"/>
+				<DIST dir="N" suit="H" max="3"/>
+				<DIST dir="N" suit="S" max="3"/>
+			</AND>
+			<AND>
+				<DIST dir="S" suit="S" min="5"/>
+				<DIST dir="N" suit="S" max="3"/>
+			</AND>
+		</OR>
+		<DIST dir="S" suit="D" max="5"/>
+		<DIST dir="S" suit="C" max="5"/>
+		<POINTS dir="N" min="6" max="12"/>
+	</AND>
+	<AND>
+		<POINTS dir="N" min="12"/>
+		<DEFENSE dir="N" min="5"/>
+		<OR>
+			<AND>
+				<DIST dir="N" suit="H" min="5"/>
+				<DIST dir="S" suit="H" max="3"/>
+				<DIST dir="S" suit="S" max="3"/>
+			</AND>
+			<AND>
+				<DIST dir="N" suit="S" min="5"/>
+				<DIST dir="S" suit="S" max="3"/>
+			</AND>
+		</OR>
+		<DIST dir="N" suit="D" max="5"/>
+		<DIST dir="N" suit="C" max="5"/>
+		<POINTS dir="S" min="6" max="12"/>
+	</AND>
+</OR>

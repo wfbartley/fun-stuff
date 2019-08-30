@@ -1,0 +1,12 @@
+<AND>
+	<OR>
+		<include filename="isNT.xml" dir="W" minHCP="15" maxHCP="17"/>
+		<include filename="isNT.xml" dir="E" minHCP="15" maxHCP="17"/>
+	</OR>
+	<OR>
+		<DIST dir="S" nonSuitSpecific="55+"/>
+		<DIST dir="N" nonSuitSpecific="55+"/>
+		<DIST dir="S" nonSuitSpecific="6+"/>
+		<DIST dir="N" nonSuitSpecific="6+"/>
+	</OR>
+</AND>
