@@ -30,11 +30,25 @@ public class RunConfig {
 	private static final String FILENAME_ATTRIBUTE = "filename";
 	private static final String COLLECT_STATS_ELEMENT = "collectStats";
 	private static final String DUMP_EACH_SAMPLE_ATTRIBUTE = "dumpEachSample";
+	private static final String INCLUDE_PBN_HEADER_ATTRIBUTE = "includePbnHeader";
+	private static final String INCLUDE_DATE_ATTRIBUTE = "includeDate";
+	private static final String INCLUDE_RESULT_INFO_ATTRIBUTE = "includeResultInfo";
+	private static final String INCLUDE_SCORING_ATTRIBUTE = "includeScoring";
+	private static final String INCLUDE_EVENT_AND_SITE_ATTRIBUTE = "includeEventAndSite";
+	private static final String INCLUDE_PLAYER_INFO_ATTRIBUTE = "includePlayerInfo";
+	private static final String INCLUDE_DD_ANALYSIS_ATTRIBUTE = "includeDdAnalysis";
 	
 	private Document doc;
 	private int runLength = 1;
 	private String specificCards;
 	private boolean dumpEachSample;
+	private boolean includePbnHeader;
+	private boolean includeDate;
+	private boolean includeResultInfo;
+	private boolean includeScoring;
+	private boolean includeEventAndSite;
+	private boolean includePlayerInfo;
+	private boolean includeDdAnalysis;
 	private HandConstraint handConstraint = null;
 	private boolean requiresDdAnalysis = false;
 	private String pbnFilename = null;
@@ -104,6 +118,13 @@ public class RunConfig {
 		catch (Exception e) {}
 		specificCards = configuration.getAttribute(SPECIFIC_CARDS_ATTRIBUTE);
 		dumpEachSample = Boolean.parseBoolean(configuration.getAttribute(DUMP_EACH_SAMPLE_ATTRIBUTE));
+		includePbnHeader = Boolean.parseBoolean(configuration.getAttribute(INCLUDE_PBN_HEADER_ATTRIBUTE));
+		includeDate = Boolean.parseBoolean(configuration.getAttribute(INCLUDE_DATE_ATTRIBUTE));
+		includeResultInfo = Boolean.parseBoolean(configuration.getAttribute(INCLUDE_RESULT_INFO_ATTRIBUTE));
+		includeScoring = Boolean.parseBoolean(configuration.getAttribute(INCLUDE_SCORING_ATTRIBUTE));
+		includeEventAndSite = Boolean.parseBoolean(configuration.getAttribute(INCLUDE_EVENT_AND_SITE_ATTRIBUTE));
+		includePlayerInfo = Boolean.parseBoolean(configuration.getAttribute(INCLUDE_PLAYER_INFO_ATTRIBUTE));
+		includeDdAnalysis = Boolean.parseBoolean(configuration.getAttribute(INCLUDE_DD_ANALYSIS_ATTRIBUTE));
 		if (dumpEachSample) {
 			requiresDdAnalysis = true;
 		}
@@ -119,6 +140,9 @@ public class RunConfig {
 		if (dealerStr.equalsIgnoreCase("random")) {
 			dealer = HandDirection.values()[(int)(Math.random() * HandDirection.values().length)];
 		}
+		else if (dealerStr.equalsIgnoreCase("useBoardNumber")) {
+			dealer = null;
+		}
 		else {
 			HandDirection dir = HandDirection.fromAbbreviation(dealerStr);
 			if (dir != null) {
@@ -130,8 +154,15 @@ public class RunConfig {
 		if (vulStr.equalsIgnoreCase("random")) {
 			vulnerability = Vulnerability.values()[(int)(Math.random() * Vulnerability.values().length)];
 		}
+		else if (vulStr.equalsIgnoreCase("useBoardNumber")) {
+			vulnerability = null;
+		}
 		else {
-			vulnerability = Vulnerability.valueOf(configuration.getAttribute(VULNERABILITY_ATTRIBUTE));
+			try {
+				vulnerability = Vulnerability.valueOf(configuration.getAttribute(VULNERABILITY_ATTRIBUTE));
+			} catch (Exception e) {
+				vulnerability = null;
+			}
 		}
 		
 		NodeList constraintNodeList = configuration.getElementsByTagName(CONSTRAINT_ELEMENT);
@@ -177,6 +208,34 @@ public class RunConfig {
 	
 	public boolean isDumpEachSample() {
 		return dumpEachSample;
+	}
+	
+	public boolean isIncludePbnHeader() {
+		return includePbnHeader;
+	}
+	
+	public boolean isIncludeDate() {
+		return includeDate;
+	}
+	
+	public boolean isIncludeResultInfo() {
+		return includeResultInfo;
+	}
+	
+	public boolean isIncludeScoring() {
+		return includeScoring;
+	}
+	
+	public boolean isIncludeEventAndSite() {
+		return includeEventAndSite;
+	}
+	
+	public boolean isIncludePlayerInfo() {
+		return includePlayerInfo;
+	}
+	
+	public boolean isIncludeDdAnalysis() {
+		return includeDdAnalysis;
 	}
 	
 	public boolean isRequiresDdAnalysis() {

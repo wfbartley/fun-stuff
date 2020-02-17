@@ -36,19 +36,31 @@ public class RunManager {
 			if (!runConfig.getStatsToCollect().isEmpty()) {
 				stats.addToSample(layout, runConfig.isRequiresDdAnalysis());
 			}
+			int boardNumber = i+1;
 			if (runConfig.isDumpEachSample()) {
+				System.out.println("Board Number: " + boardNumber);
 				System.out.println(layout);
 				System.out.println(layout.getDdResults());
 			}
-			int boardNumber = i+1;
+			HandDirection dlr = runConfig.getDealer();
+			if (dlr == null) {
+				dlr = HandDirection.fromBoardNumber(boardNumber);
+			}
+			Vulnerability vul = runConfig.getVulnerability();
+			if (vul == null) {
+				vul = Vulnerability.fromBoardNumber(boardNumber);
+			}
 			if (pbnFilename != null) {
-				builder.append(layout.toPbn(boardNumber, runConfig.getDealer(), runConfig.getVulnerability()));
+				builder.append(layout.toPbn(boardNumber, dlr, vul, runConfig.isIncludeDate(), runConfig.isIncludeEventAndSite(), 
+						runConfig.isIncludePlayerInfo(), runConfig.isIncludeScoring(), runConfig.isIncludeResultInfo(), runConfig.isIncludeDdAnalysis()));
 				if (i == 0) {
 					try {
 						pbnOutputStream = new PrintStream(new FileOutputStream(pbnFilename + ".pbn"));
-						pbnOutputStream.println("% PBN 2.1");
-						pbnOutputStream.println("% EXPORT");
-						pbnOutputStream.println();
+						if (runConfig.isIncludePbnHeader()) {
+							pbnOutputStream.println("% PBN 2.1");
+							pbnOutputStream.println("% EXPORT");
+							pbnOutputStream.println();
+						}
 					} catch (FileNotFoundException e) { }
 				}
 				if (pbnOutputStream != null) {
@@ -58,7 +70,7 @@ public class RunManager {
 			}
 			if (linFilename != null) {
 				int handIndex = i % MAX_HANDS_PER_LIN_FILE;
-				builder.append(layout.toLin(handIndex + 1, boardNumber, runConfig.getDealer(), runConfig.getVulnerability()));
+				builder.append(layout.toLin(handIndex + 1, boardNumber, dlr, vul));
 				if (handIndex == 0) {
 					if (linOutputStream != null) {
 						linOutputStream.close();

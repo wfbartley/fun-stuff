@@ -16,6 +16,7 @@ public interface DdsDll extends Library {
 	public static final int HAND_WEST = 3;
 	
 	public static final String [] suitSymbols = {"S", "H", "D", "C", "N"};
+	public static final String [] pbnSuitSymbols = {" S", " H", " D", " C", "NT"};
 	public static final String [] directionSymbols = {"N", "E", "S", "W" };
 	
     DdsDll INSTANCE = (DdsDll) Native.loadLibrary("dds", DdsDll.class);

@@ -26,6 +26,10 @@ public enum HandDirection {
 		addAbbreviationToMap(abbreviation, this);
 	}
 	
+	public static HandDirection fromBoardNumber(int boardNumber) {
+		return values()[(boardNumber - 1) % 4];
+	}
+	
 	public String getAbbreviation() {
 		return abbreviation;
 	}

@@ -12,6 +12,13 @@
 			</xs:choice>
 			<xs:attribute name="runLength" type="xs:positiveInteger" use="required"/>
 			<xs:attribute name="dumpEachSample" type="xs:boolean"/>
+			<xs:attribute name="includePbnHeader" type="xs:boolean"/>
+			<xs:attribute name="includeDate" type="xs:boolean"/>
+			<xs:attribute name="includeEventAndSite" type="xs:boolean"/>
+			<xs:attribute name="includePlayerInfo" type="xs:boolean"/>
+			<xs:attribute name="includeScoring" type="xs:boolean"/>
+			<xs:attribute name="includeResultInfo" type="xs:boolean"/>
+			<xs:attribute name="includeDdAnalysis" type="xs:boolean"/>
 			<xs:attribute name="specificCards" type="xs:normalizedString"/>
 			<xs:attribute name="pbnFilename" type="xs:normalizedString"/>
 			<xs:attribute name="linFilename" type="xs:normalizedString"/>
@@ -31,6 +38,7 @@
 			<xs:enumeration value="E"/>
 			<xs:enumeration value="S"/>
 			<xs:enumeration value="W"/>
+			<xs:enumeration value="useBoardNumber"/>
 			<xs:enumeration value="random"/>
 		</xs:restriction>
 	</xs:simpleType>
@@ -41,6 +49,7 @@
 			<xs:enumeration value="NS"/>
 			<xs:enumeration value="EW"/>
 			<xs:enumeration value="All"/>
+			<xs:enumeration value="useBoardNumber"/>
 			<xs:enumeration value="random"/>
 		</xs:restriction>
 	</xs:simpleType>

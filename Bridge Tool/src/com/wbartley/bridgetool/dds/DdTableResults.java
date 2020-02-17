@@ -32,10 +32,42 @@ public class DdTableResults extends Structure {
 		return resTable[strain.ordinal() * 4 + direction.ordinal()];
 	}
 	
+	public String getDoubleDummyTricks() {
+		StringBuffer result = new StringBuffer();
+		result.append(String.format("%x", getNumTricks(4, 0)));
+		for (int strain = 0; strain < 4; strain++) {
+			result.append(String.format("%x", getNumTricks(strain, 0)));
+		}
+		result.append(String.format("%x", getNumTricks(4, 2)));
+		for (int strain = 0; strain < 4; strain++) {
+			result.append(String.format("%x", getNumTricks(strain, 2)));
+		}
+		result.append(String.format("%x", getNumTricks(4, 1)));
+		for (int strain = 0; strain < 4; strain++) {
+			result.append(String.format("%x", getNumTricks(strain, 1)));
+		}
+		result.append(String.format("%x", getNumTricks(4, 3)));
+		for (int strain = 0; strain < 4; strain++) {
+			result.append(String.format("%x", getNumTricks(strain, 3)));
+		}
+		return result.toString();
+	}
+	
+	public String getOptimumResultsTable() {
+		StringBuffer result = new StringBuffer();
+		for (int direction = 0; direction < 4; direction++) {
+			for (int strain = 0; strain < 5; strain++) {
+				result.append(DdsDll.directionSymbols[direction] + " " + DdsDll.pbnSuitSymbols[strain] + " " + 
+			                  String.format("%2d", getNumTricks(strain, direction)) + System.lineSeparator());
+			}
+		}
+		return result.toString();
+	}
+	
 	@Override
 	public String toString() {
 		StringBuffer result = new StringBuffer();
-		result.append("    N   E   S   W\n");
+		result.append("    N   E   S   W" + System.lineSeparator());
 		for (int strain = 0; strain < 5; strain++) {
 			result.append(DdsDll.suitSymbols[strain]);
 			for (int direction = 0; direction < 4; direction++) {
@@ -45,7 +77,7 @@ public class DdTableResults extends Structure {
 				}
 				result.append(String.format("%4d", numTricks));
 			}
-			result.append("\n");
+			result.append(System.lineSeparator());
 		}
 		return result.toString();
 	}

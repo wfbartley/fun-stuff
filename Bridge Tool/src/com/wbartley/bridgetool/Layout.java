@@ -91,34 +91,52 @@ public class Layout {
 		return ddResults;
 	}
 	
-	public String toPbn(int boardNumber, HandDirection dealer, Vulnerability vulnerability) {
+	public String toPbn(int boardNumber, HandDirection dealer, Vulnerability vulnerability, boolean includeDate, boolean includeEventAndSite,
+			boolean includePlayerInfo, boolean includeScoring, boolean includeResultInfo, boolean includeDdAnalysis) {
 		/* Here is an example of what it looks like
-		[Event "Computer generated hands"]
-		[Site "Inside my computer"]
+		[Event "HomeGame"]
+		[Site "MyHouse"]
 		[Date "2018.06.14"]
 		[Board "1"]
-		[West "Nobody"]
-		[North "Nobody"]
-		[East "Nobody"]
-		[South "Nobody"]
+		[West "?"]
+		[North "?"]
+		[East "?"]
+		[South "?"]
 		[Dealer "N"]
 		[Vulnerable "None"]
 		[Deal "N:.63.AKQ987.A9732 A8654.KQ5.T.QJT6 J973.J98742.3.K4 KQT2.AT.J6542.85"]
-		[Scoring "Any"]
-		[Declarer ""]
-		[Contract "None"]
-		[Result ""] */
+		[Scoring "?"]
+		[Declarer "?"]
+		[Contract "?"]
+		[Result "?"] */
 		StringBuilder builder = new StringBuilder();
-		builder.append("[Event \"Computer generated hands\"]\n");
-		builder.append("[Site \"Inside my computer\"]\n");
-		builder.append(String.format("[Date \"%s\"]\n", dateFmt.format(new Date())));
-		builder.append(String.format("[Board \"%d\"]\n", boardNumber));
-		builder.append("[West \"Nobody\"]\n");
-		builder.append("[North \"Nobody\"]\n");
-		builder.append("[East \"Nobody\"]\n");
-		builder.append("[South \"Nobody\"]\n");
-		builder.append("[Dealer \"" + dealer.getAbbreviation() + "\"]\n");
-		builder.append("[Vulnerable \"" + vulnerability + "\"]\n");
+		if (includeEventAndSite) {
+			if (boardNumber == 1) {
+				builder.append("[Event \"BridgemateEvent\"]" + System.lineSeparator());
+				builder.append("[Site \"BridgemateLocation\"]" + System.lineSeparator());
+			}
+			else {
+				builder.append("[Event \"#\"]" + System.lineSeparator());
+				builder.append("[Site \"#\"]" + System.lineSeparator());
+			}
+		}
+		if (includeDate) {
+			if (boardNumber == 1) {
+				builder.append(String.format("[Date \"%s\"]", dateFmt.format(new Date())) + System.lineSeparator());
+			}
+			else {
+				builder.append("[Date \"#\"]" + System.lineSeparator());
+			}
+		}
+		builder.append(String.format("[Board \"%d\"]", boardNumber) + System.lineSeparator());
+		if (includePlayerInfo) {
+			builder.append("[North \"?\"]" + System.lineSeparator());
+			builder.append("[East \"?\"]" + System.lineSeparator());
+			builder.append("[South \"?\"]" + System.lineSeparator());
+			builder.append("[West \"?\"]" + System.lineSeparator());
+		}
+		builder.append("[Dealer \"" + dealer.getAbbreviation() + "\"]" + System.lineSeparator());
+		builder.append("[Vulnerable \"" + vulnerability + "\"]" + System.lineSeparator());
 		builder.append("[Deal \"" + dealer.getAbbreviation() + ":");
 		int handIdx = dealer.ordinal();
 		for (int i = 0; i < hands.length; i++) {
@@ -129,11 +147,22 @@ public class Layout {
 				builder.append(" ");
 			}
 		}
-		builder.append("\"]\n");
-		builder.append("[Scoring \"Any\"]\n");
-		builder.append("[Declarer \"\"]\n");
-		builder.append("[Contract \"None\"]\n");
-		builder.append("[Result \"\"]\n");
+		builder.append("\"]" + System.lineSeparator());
+		if (includeScoring) {
+			builder.append("[Scoring \"?\"]" + System.lineSeparator());
+		}
+		if (includeResultInfo) {
+			builder.append("[Declarer \"\"]" + System.lineSeparator());
+			builder.append("[Contract \"\"]" + System.lineSeparator());
+			builder.append("[Result \"\"]" + System.lineSeparator());
+			builder.append("[Auction \"?\"]" + System.lineSeparator());
+		}
+		if (includeDdAnalysis) {
+			builder.append("[DoubleDummyTricks \"" + getDdResults().getDoubleDummyTricks() + "\"]" + System.lineSeparator());
+			builder.append("[OptimumResultTable \"Declarer;Denomination\\2R;Result\\2R\"]" + System.lineSeparator());
+			builder.append(getDdResults().getOptimumResultsTable());
+		}
+		builder.append(System.lineSeparator());
 		return builder.toString();
 	}
 	

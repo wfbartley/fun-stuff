@@ -1,18 +1,25 @@
 <run xmlns="http://www.wbartley.com/BridgeTool"
      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
      xsi:schemaLocation="http://www.wbartley.com/BridgeTool bridgetool.xsd"
-     runLength="10"
+     runLength="21"
+     includePbnHeader="false"
+     includeDate="true"
+     includeEventAndSite="true"
+     includePlayerInfo="true"
+     includeScoring="true"
+     includeResultInfo="true"
+     includeDdAnalysis="false"
      dumpEachSample="true"
-     linFilename="ntDefense"
-     dealer="random"
-     vulnerability="random">
+     pbnFilename="bartleygame"
+     dealer="useBoardNumber"
+     vulnerability="useBoardNumber">
+     <!-- 
 	<constraint>
-	<!--
 		<OR>
 			<include filename="isJacoby2NT.xml"/>
 			<include filename="isSplinter.xml"/>
 		</OR>
-	-->
 	<include filename="ntDefense.xml"/>
 	</constraint>
+	-->
 </run>
