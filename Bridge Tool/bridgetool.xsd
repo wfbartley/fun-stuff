@@ -177,7 +177,7 @@
 	</xs:complexType>
 	
 	<xs:complexType name="constraintPointsType">
-		<xs:attribute name="dir" type="handDirectionEnum" use="required"/>
+		<xs:attribute name="dirs" type="xs:normalizedString" use="required"/>
 		<xs:attribute name="suit" type="suitEnum"/>
 		<xs:attribute name="min" type="xs:nonNegativeInteger"/>
 		<xs:attribute name="max" type="xs:nonNegativeInteger"/>

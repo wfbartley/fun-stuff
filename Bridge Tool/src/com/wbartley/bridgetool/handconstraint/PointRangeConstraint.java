@@ -7,20 +7,23 @@ import com.wbartley.bridgetool.HandDirection;
 import com.wbartley.bridgetool.Layout;
 
 public class PointRangeConstraint implements HandConstraint {
-	private HandDirection handDirection;
+	private HandDirection [] handDirections;
 	private int minPoints = 0, maxPoints = 37;
 
 	@Override
 	public HandConstraint parseConstraint(Element element) throws ConstraintParseException {
 		PointRangeConstraint result = new PointRangeConstraint();
-		String dir = element.getAttribute("dir");
-		if (dir.isEmpty()) {
-			throw new ConstraintParseException("PointRangeConstraint requires dir (N,S,E or W) attribute");
+		String dirs = element.getAttribute("dirs");
+		result.handDirections = new HandDirection[dirs.length()];
+		if (dirs.isEmpty()) {
+			throw new ConstraintParseException("PointRangeConstraint requires dirs ([NSEW]+) attribute");
 		}
 		try {
-			result.handDirection = HandDirection.fromAbbreviation(dir);
+			for (int i = 0; i < dirs.length(); i++) {
+				result.handDirections[i] = HandDirection.fromAbbreviation(dirs.substring(i, i+1));
+			}
 		} catch (Exception e) {
-			throw new ConstraintParseException("Unrecognized hand direction, " + dir + ". Should be one of N,S,E or W.");
+			throw new ConstraintParseException("Unrecognized hand direction, " + dirs + ", may only contain N,S,E or W.");
 		}
 		String minPointsStr = element.getAttribute("min");
 		if (!minPointsStr.isEmpty()) {
@@ -54,8 +57,11 @@ public class PointRangeConstraint implements HandConstraint {
 
 	@Override
 	public boolean meetsConstraint(Layout layout) {
-		Hand hand = layout.getHands()[handDirection.ordinal()];
-		int points = hand.getTotalPoints();
+		int points = 0;
+		for (HandDirection dir : handDirections) {
+			Hand hand = layout.getHands()[dir.ordinal()];
+			points += hand.getTotalPoints();
+		}
 		return points >= minPoints && points <= maxPoints;
 	}
 

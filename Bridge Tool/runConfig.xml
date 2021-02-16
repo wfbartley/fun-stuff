@@ -1,25 +1,33 @@
 <run xmlns="http://www.wbartley.com/BridgeTool"
      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
      xsi:schemaLocation="http://www.wbartley.com/BridgeTool bridgetool.xsd"
-     runLength="21"
+     runLength="16"
      includePbnHeader="false"
      includeDate="true"
      includeEventAndSite="true"
      includePlayerInfo="true"
      includeScoring="true"
-     includeResultInfo="true"
+     includeResultInfo="false"
      includeDdAnalysis="false"
-     dumpEachSample="true"
-     pbnFilename="bartleygame"
+     dumpEachSample="false"
+     pbnFilename="junko"
      dealer="useBoardNumber"
      vulnerability="useBoardNumber">
-     <!-- 
-	<constraint>
+    <!--
+    <constraint>
+   		<AND>
+   			<POINTS dirs="S" min="10" max="12"/>
+   			<DIST dir="S" suit="S" min="4"/>
+   		</AND>
+    </constraint>
+    <collectStats>
+        <CONTRACT dir="N" contract="4S"/>
+    </collectStats>
+   	<constraint>
 		<OR>
 			<include filename="isJacoby2NT.xml"/>
 			<include filename="isSplinter.xml"/>
 		</OR>
-	<include filename="ntDefense.xml"/>
 	</constraint>
 	-->
 </run>
