@@ -49,17 +49,19 @@ public class LayoutPermuter {
 			if (row != 2 && col < 7 - vehicleLength) {
 				byte piece = Piece.get(row, col, isTruck, false);
 				if (layout.addPiece(piece)) {
-					if (nextVehicle == numVehicles) {
-						if (!layout.redCarCanExit() && !layout.isUnusable()) {
-							keepGoing = listener.processLayout(layout);
-						}
-					}
-					else {
-						if (nextVehicle == firstTruck) {
-							generatePermutations(nextVehicle, 0);
+					if (!layout.isUnusable()) {
+						if (nextVehicle == numVehicles) {
+							if (!layout.redCarCanExit()) {
+								keepGoing = listener.processLayout(layout);
+							}
 						}
 						else {
-							generatePermutations(nextVehicle, i+vehicleLength);
+							if (nextVehicle == firstTruck) {
+								generatePermutations(nextVehicle, 0);
+							}
+							else {
+								generatePermutations(nextVehicle, i+vehicleLength);
+							}
 						}
 					}
 					layout.removeLastPiece();

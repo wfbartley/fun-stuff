@@ -65,26 +65,35 @@ public class ParkingLotLayout implements Comparable<ParkingLotLayout>, Serializa
 	
 	public boolean isUnusable() {
 		int [] colCount = { 0, 0, 0, 0, 0, 0 };
-		boolean [] truckAboveRow2 = { false, false, false, false, false, false };
-		int firstCol = 6;
+		int [] rowCount = { 0, 0, 0, 0, 0, 0 };
 		for (int i = 1; i < numPieces; i++) {
 			byte piece = getPiece(i);
 			if (Piece.isVert(piece)) {
 				int col = Piece.getCol(piece);
-				if (col < firstCol) firstCol = col;
 				if (Piece.isTruck(piece)) {
 					if (Piece.getRow(piece) < 2) {
-						truckAboveRow2[col] = true;
+						colCount[col] += 4;
 					}
-					colCount[col] += 3;
+					else {
+						colCount[col] += 3;
+					}
 				}
 				else {
 					colCount[col] += 2;
 				}
 			}
+			else {
+				int row = Piece.getRow(piece);
+				if (Piece.isCar(piece)) {
+					rowCount[row] += 2;
+				}
+				else {
+					rowCount[row] += 3;
+				}
+			}
 		}
-		for (int i = firstCol; i < 6; i++) {
-			if (colCount[i] == 6 || colCount[i] == 5 && truckAboveRow2[i]) return true;
+		for (int i = 0; i < 6; i++) {
+			if (rowCount[i] > 5 || colCount[i] > 5) return true;
 		}
 		return false;
 	}
@@ -264,7 +273,7 @@ public class ParkingLotLayout implements Comparable<ParkingLotLayout>, Serializa
 				} while (!added && numTries < 100);
 				if (numTries == 100) break;
 			}
-			if (numTries < 100 && !result.redCarCanExit()) {
+			if (numTries < 100 && !result.isUnusable() && !result.redCarCanExit()) {
 				done = true;
 			}
 			else {

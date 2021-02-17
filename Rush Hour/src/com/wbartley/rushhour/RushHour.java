@@ -390,6 +390,16 @@ public class RushHour implements ActionListener, MouseListener {
 	
 	@Override
 	public void mouseClicked(MouseEvent e) {
+	}
+
+	@Override
+	public void mousePressed(MouseEvent e) {
+		// unused
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {
+		System.out.println("Mouse event");
 		Cursor cursor = boardPanel.getCursor();
 		ParkingLotLayout layout = boardPanel.getParkingLotLayout();
 		if (e.getButton() == MouseEvent.BUTTON1) {
@@ -460,16 +470,6 @@ public class RushHour implements ActionListener, MouseListener {
 				}
 			}
 		}
-	}
-
-	@Override
-	public void mousePressed(MouseEvent e) {
-		// unused
-	}
-
-	@Override
-	public void mouseReleased(MouseEvent e) {
-		// unused
 	}
 
 	@Override

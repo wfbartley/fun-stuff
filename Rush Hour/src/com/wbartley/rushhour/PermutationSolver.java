@@ -175,7 +175,7 @@ public class PermutationSolver implements LayoutPermuter.PermutationListener {
 	@Override
 	public boolean processLayout(ParkingLotLayout layout) {
 		numPositionsExamined++;
-		if (debug && numPositionsExamined % 200000 == 0) {
+		if (debug && numPositionsExamined % 1000000 == 0) {
 			dumpStats();
 		}
 		if (isInUnsolvables(layout)) {
