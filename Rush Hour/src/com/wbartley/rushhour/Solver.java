@@ -1,7 +1,7 @@
 package com.wbartley.rushhour;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 public class Solver {
@@ -14,7 +14,7 @@ public class Solver {
 		}
 	}
 	private ParkingLotLayout originalLayout;
-	private Set<ParkingLotLayout> uniquePositions = new HashSet<ParkingLotLayout>(512);
+	private Set<ParkingLotLayout> uniquePositions = new LinkedHashSet<ParkingLotLayout>(512);
 	private MoveList bestSolution = null;
 	private static int maxPositionsExamined;
 	

@@ -170,14 +170,17 @@ public class RushHour implements ActionListener, MouseListener {
 			System.exit(0);
 		}
 		else if (actionCommand.equals(RANDOM_PUZZLE_MENU_ITEM)){
+			currentLayoutFile = null;
 			new GenerateRandomPuzzleDialog(this);
 		}
 		else if (actionCommand.equals(SET_UP_LAYOUT_MENU_ITEM)){ 
 			if (!setUpLayoutActive) {
+				currentLayoutFile = null;
 				new SetUpLayoutDialog(this);
 			}
 		}
 		else if (actionCommand.equals(FIND_HARDEST_PUZZLE_MENU_ITEM)){
+			currentLayoutFile = null;
 			new FindHardestPuzzleDialog(this);
 		}
 		else if (actionCommand.equals(SOLVE_PUZZLE_MENU_ITEM)) {

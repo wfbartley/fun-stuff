@@ -102,7 +102,7 @@ public class FindHardestPuzzleDialog extends JDialog {
 
 		@Override
 		public void run() {
-			PermutationSolver permutationSolver = new PermutationSolver(3, 100000000, this, 0, null, false);
+			PermutationSolver permutationSolver = new PermutationSolver(3, 2000000, this, 0, null, true);
 			LayoutPermuter permuter = new LayoutPermuter(new ParkingLotLayout(), numCars, numTrucks, permutationSolver);
 			long startTime = System.currentTimeMillis();
 			permuter.generatePermutations();

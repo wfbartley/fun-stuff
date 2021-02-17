@@ -65,7 +65,7 @@ public class ParkingLotLayout implements Comparable<ParkingLotLayout>, Serializa
 	
 	public boolean isUnusable() {
 		int [] colCount = { 0, 0, 0, 0, 0, 0 };
-		boolean [] truckAboveRow3 = { false, false, false, false, false, false };
+		boolean [] truckAboveRow2 = { false, false, false, false, false, false };
 		int firstCol = 6;
 		for (int i = 1; i < numPieces; i++) {
 			byte piece = getPiece(i);
@@ -73,8 +73,8 @@ public class ParkingLotLayout implements Comparable<ParkingLotLayout>, Serializa
 				int col = Piece.getCol(piece);
 				if (col < firstCol) firstCol = col;
 				if (Piece.isTruck(piece)) {
-					if (Piece.getRow(piece) != 3) {
-						truckAboveRow3[col] = true;
+					if (Piece.getRow(piece) < 2) {
+						truckAboveRow2[col] = true;
 					}
 					colCount[col] += 3;
 				}
@@ -84,7 +84,7 @@ public class ParkingLotLayout implements Comparable<ParkingLotLayout>, Serializa
 			}
 		}
 		for (int i = firstCol; i < 6; i++) {
-			if (colCount[i] == 6 || colCount[i] == 5 && truckAboveRow3[i]) return true;
+			if (colCount[i] == 6 || colCount[i] == 5 && truckAboveRow2[i]) return true;
 		}
 		return false;
 	}
