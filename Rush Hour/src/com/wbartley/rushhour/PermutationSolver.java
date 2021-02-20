@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.jar.Pack200.Packer;
 
 public class PermutationSolver implements LayoutPermuter.PermutationListener {
 	public interface Notification {
@@ -30,7 +29,11 @@ public class PermutationSolver implements LayoutPermuter.PermutationListener {
 	private long numPositionsExamined = 0;
 	private long numShortCircuited = 0;
 	private long totalUnsolvedMaintenanceTime = 0;
+	private int maxPositionsInUnsolvablePuzzle = 0;
+	private ParkingLotLayout mostPromisingUnsolvablePuzzle;
 	private boolean debug;
+	private boolean pauseSearch = false;
+	private boolean stopSearch = false;
 	
 	public PermutationSolver(int numThreads, int initialUnsolvablePositionsSetSize, Notification notification, int minNumberOfMoves, PuzzleDifficulty desiredDifficulty, boolean debug) {
 		this.numThreads = numThreads;
@@ -68,6 +71,18 @@ public class PermutationSolver implements LayoutPermuter.PermutationListener {
 		return numShortCircuited;
 	}
 	
+	public ParkingLotLayout getMostPromisingUnsolvablePuzzle() {
+		return mostPromisingUnsolvablePuzzle;
+	}
+	
+	public void pauseSearch(boolean pause) {
+		pauseSearch = pause;
+	}
+	
+	public void stopSearch() {
+		stopSearch = true;
+	}
+	
 	public void dumpStats() {
 		System.out.println("Num positions examined = " + numPositionsExamined + ", short circuited = " + numShortCircuited);
 		System.out.println("Positions per second = " + numPositionsExamined * 1000 / getRunDuration());
@@ -77,6 +92,8 @@ public class PermutationSolver implements LayoutPermuter.PermutationListener {
 			totalUnsolvable += up.size();
 		}
 		System.out.println("Num unsolved in set = " + totalUnsolvable);
+		System.out.println("Most promising unsolvable: " + maxPositionsInUnsolvablePuzzle);
+		System.out.println(mostPromisingUnsolvablePuzzle);
 	}
 	
 	public void resetUnsolvablePositions() {
@@ -148,6 +165,11 @@ public class PermutationSolver implements LayoutPermuter.PermutationListener {
 		else {
 			long start = System.nanoTime();
 			HashSet<ParkingLotLayout> unsolvable = unsolvablePositions.get(curUnsolvableHashSet);
+			int numPositions = solver.getNumPositionsExamined();
+			if (numPositions > maxPositionsInUnsolvablePuzzle) {
+				maxPositionsInUnsolvablePuzzle = numPositions;
+				mostPromisingUnsolvablePuzzle = solver.getLayout();
+			}
 			unsolvable.addAll(solver.getPositionsExamined());
 			if (unsolvable.size() * 100 / unsolvablePositionsSize > 90){
 				curUnsolvableHashSet++;
@@ -156,7 +178,7 @@ public class PermutationSolver implements LayoutPermuter.PermutationListener {
 			}
 			totalUnsolvedMaintenanceTime += System.nanoTime() - start;
 		}
-		return false;
+		return stopSearch;
 	}
 	
 	public boolean isInUnsolvables(ParkingLotLayout layout) {
@@ -174,6 +196,11 @@ public class PermutationSolver implements LayoutPermuter.PermutationListener {
 	
 	@Override
 	public boolean processLayout(ParkingLotLayout layout) {
+		while (pauseSearch) {
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) {}
+		}
 		numPositionsExamined++;
 		if (debug && numPositionsExamined % 1000000 == 0) {
 			dumpStats();

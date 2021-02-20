@@ -48,7 +48,5 @@ public class AboutRushHourDialog extends JDialog {
 		});
 		// display main panel
 		pack();
-		setLocationRelativeTo(null);
-		setVisible(true);
 	}
 }

@@ -24,6 +24,7 @@ public class FindHardestPuzzleDialog extends JDialog {
 	private RushHour mainApp;
 	private JPanel mainPanel;
 	private JTextField numCarsTextField, numTrucksTextField;
+	private PuzzleGenerator puzzleGenerator = null;
 
 	public FindHardestPuzzleDialog(RushHour mainApp){
 		super(new JFrame(), "Find Hardest Puzzle", false);
@@ -76,6 +77,7 @@ public class FindHardestPuzzleDialog extends JDialog {
 			    
 		ok.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
+				mainApp.setHardestPuzzleSearchInProgress(true);
 				setVisible(false);
 				generatePuzzles();
 			}
@@ -89,30 +91,37 @@ public class FindHardestPuzzleDialog extends JDialog {
 		// display main panel
 		pack();
 		setLocationRelativeTo(mainApp.getMainFrame());
-		setVisible(true);
 	}
 	
 	public class PuzzleGenerator implements Runnable, Notification {
-		private int numCars, numTrucks;
+		private int numCars, numTrucks, percentComplete = 0;
+		private PermutationSolver permutationSolver;
 		
 		public PuzzleGenerator(int numCars, int numTrucks) {
 			this.numCars = numCars;
 			this.numTrucks = numTrucks;
 		}
+		
+		public void pauseSearch(boolean pause) {
+			permutationSolver.pauseSearch(pause);
+		}
+		
+		public void stopSearch() {
+			permutationSolver.stopSearch();
+		}
 
 		@Override
 		public void run() {
-			PermutationSolver permutationSolver = new PermutationSolver(3, 2000000, this, 0, null, true);
+			permutationSolver = new PermutationSolver(3, 2000000, this, 0, null, true);
 			LayoutPermuter permuter = new LayoutPermuter(new ParkingLotLayout(), numCars, numTrucks, permutationSolver);
-			long startTime = System.currentTimeMillis();
 			permuter.generatePermutations();
-			System.out.println(permutationSolver.getNumPositionsExamined() * 1000 / (System.currentTimeMillis() - startTime) + " positions per second analyzed");
 			permutationSolver.exit();
+			mainApp.setHardestPuzzleSearchInProgress(false);
 		}
 		
 		@Override
 		public void goodPuzzleFound(ParkingLotLayout layout, MoveList solution) {
-			mainApp.setLayoutSolutionAndMessage(layout, solution, null);
+			mainApp.setLayoutSolutionAndMessage(layout, solution, percentComplete + "%");
 		}
 
 		@Override
@@ -121,9 +130,14 @@ public class FindHardestPuzzleDialog extends JDialog {
 
 		@Override
 		public void progressUpdate(int percentComplete) {
-			System.out.println("Percent complete = " + percentComplete);
-			if (percentComplete == 100) {
-				mainApp.setSupplementalMessage("Finished!");
+			this.percentComplete = percentComplete;
+			if (percentComplete != 100) {
+				mainApp.setSupplementalMessage(percentComplete + "%");
+			}
+			else {
+				mainApp.setSupplementalMessage("100% Finished!");
+				System.out.println("Most promising unsolvable puzzle:");
+				System.out.println(permutationSolver.getMostPromisingUnsolvablePuzzle());
 			}
 		}
 	}
@@ -144,9 +158,25 @@ public class FindHardestPuzzleDialog extends JDialog {
 		}
 		else {
 			mainApp.setSupplementalMessage("Generating puzzles..");
-			Thread puzzleGeneratorThread = new Thread(new PuzzleGenerator(numCars, numTrucks));
+			puzzleGenerator = new PuzzleGenerator(numCars, numTrucks);
+			Thread puzzleGeneratorThread = new Thread(puzzleGenerator);
 			puzzleGeneratorThread.start();
 		}
+	}
+	
+	public void pauseSearch(boolean pause) {
+		puzzleGenerator.pauseSearch(pause);
+		if (pause) {
+			mainApp.setSupplementalMessage("Search paused");
+		}
+		else {
+			mainApp.setSupplementalMessage("Generating puzzles..");
+		}
+	}
+	
+	public void stopSearch() {
+		puzzleGenerator.stopSearch();
+		mainApp.setSupplementalMessage("Search terminated");
 	}
 
 	class MyIntFilter extends DocumentFilter {

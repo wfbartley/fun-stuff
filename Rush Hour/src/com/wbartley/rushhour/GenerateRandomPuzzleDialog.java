@@ -29,7 +29,8 @@ public class GenerateRandomPuzzleDialog extends JDialog {
 	private JPanel mainPanel;
 	private JRadioButton noviceRadio, intermediateRadio, advancedRadio, expertRadio, proRadio;
 	private JTextField numCarsTextField, numTrucksTextField, minNumMovesTextField;
-
+	private PuzzleGenerator puzzleGenerator = null;
+	
 	public GenerateRandomPuzzleDialog(RushHour mainApp){
 		super(new JFrame(), "Generate Random Puzzle", false);
 		this.mainApp = mainApp;
@@ -132,6 +133,7 @@ public class GenerateRandomPuzzleDialog extends JDialog {
 		ok.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
 				setVisible(false);
+				mainApp.setRandomPuzzleSearchInProgress(true);
 				generatePuzzle();
 			}
 		});
@@ -144,15 +146,16 @@ public class GenerateRandomPuzzleDialog extends JDialog {
 		// display main panel
 		pack();
 		setLocationRelativeTo(mainApp.getMainFrame());
-		setVisible(true);
 	}
 	
 	public class PuzzleGenerator implements Runnable, Notification {
+		private boolean interruptSearch = false;
 		private int numCars, numTrucks;
 		private int minNumMoves;
 		private PuzzleDifficulty desiredDifficulty;
 		private int bestPuzzleLength = 0;
 		private int bestPuzzleDistance = 0;
+		private PermutationSolver permutationSolver = null;
 		
 		public PuzzleGenerator(int minNumMoves, PuzzleDifficulty desiredDifficulty, int numCars, int numTrucks) {
 			this.minNumMoves = minNumMoves;
@@ -160,11 +163,22 @@ public class GenerateRandomPuzzleDialog extends JDialog {
 			this.numCars = numCars;
 			this.numTrucks = numTrucks;
 		}
+		
+		public void updateRunningMessage() {
+			String message;
+			if (minNumMoves != 0) {
+				message = "Attempting to generate " + minNumMoves + " move puzzle.";
+			}
+			else {
+				message = "Attempting to generate " + desiredDifficulty + " level puzzle.";
+			}
+			mainApp.setSupplementalMessage(message);
+		}
 
 		@Override
 		public void run() {
 			Random random = new Random(System.nanoTime());
-			PermutationSolver permutationSolver = new PermutationSolver(3, 2000000, this, minNumMoves, desiredDifficulty, false);
+			permutationSolver = new PermutationSolver(3, 2000000, this, minNumMoves, desiredDifficulty, false);
 			do {
 				int remainingNumCars = numCars;
 				int remainingNumTrucks = numTrucks;
@@ -189,8 +203,25 @@ public class GenerateRandomPuzzleDialog extends JDialog {
 				LayoutPermuter permuter = new LayoutPermuter(layout, remainingNumCars, remainingNumTrucks, permutationSolver);
 				permuter.generatePermutations();
 				permutationSolver.resetUnsolvablePositions();
-			} while (!permutationSolver.isDesiredDifficultyPuzzleFound());
+			} while (!permutationSolver.isDesiredDifficultyPuzzleFound() && !interruptSearch);
 			permutationSolver.exit();
+			mainApp.setRandomPuzzleSearchInProgress(false);
+		}
+		
+		public void pauseSearch(boolean pause) {
+			permutationSolver.pauseSearch(pause);
+			if (pause) {
+				mainApp.setSupplementalMessage("Search Paused");
+			}
+			else {
+				updateRunningMessage();
+			}
+		}
+		
+		public void stopSearch() {
+			interruptSearch = true;
+			permutationSolver.stopSearch();
+			mainApp.setSupplementalMessage("Search Terminated");
 		}
 		
 		@Override
@@ -264,9 +295,18 @@ public class GenerateRandomPuzzleDialog extends JDialog {
 			else {
 				mainApp.setSupplementalMessage("Attempting to generate " + difficulty + " level puzzle.");
 			}
-			Thread puzzleGeneratorThread = new Thread(new PuzzleGenerator(minNumMoves, difficulty, numCars, numTrucks));
+			puzzleGenerator = new PuzzleGenerator(minNumMoves, difficulty, numCars, numTrucks);
+			Thread puzzleGeneratorThread = new Thread(puzzleGenerator);
 			puzzleGeneratorThread.start();
 		}
+	}
+	
+	public void pauseSearch(boolean pause) {
+		puzzleGenerator.pauseSearch(pause);
+	}
+	
+	public void stopSearch() {
+		puzzleGenerator.stopSearch();
 	}
 
 	class MyIntFilter extends DocumentFilter {

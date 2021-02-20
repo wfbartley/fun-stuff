@@ -1,6 +1,7 @@
 package com.wbartley.rushhour;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -14,17 +15,18 @@ public class Solver {
 		}
 	}
 	private ParkingLotLayout originalLayout;
-	private Set<ParkingLotLayout> uniquePositions = new LinkedHashSet<ParkingLotLayout>(512);
+	private Set<ParkingLotLayout> uniquePositions;
 	private MoveList bestSolution = null;
 	private static int maxPositionsExamined;
 	
 	public Solver(ParkingLotLayout layout) {
-		this.originalLayout = new ParkingLotLayout(layout);
-		uniquePositions.add(originalLayout);
+		bestSolution = null;
+		this.originalLayout = layout;
+		uniquePositions = new LinkedHashSet<ParkingLotLayout>(2048);
 	}
 	
 	public void reset(ParkingLotLayout layout) {
-		this.originalLayout = new ParkingLotLayout(layout);
+		originalLayout = new ParkingLotLayout(layout);
 		bestSolution = null;
 		uniquePositions.clear();
 	}

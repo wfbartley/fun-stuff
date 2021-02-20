@@ -53,14 +53,6 @@ public class SetUpLayoutDialog extends JDialog implements ActionListener, Window
 				
 		// display main panel
 		pack();
-		Component mainFrame = mainApp.getMainFrame();
-		setLocationRelativeTo(mainFrame);
-		setLocation(new Point(mainFrame.getX() + mainFrame.getWidth(), mainFrame.getY()));
-		mainApp.startLayoutSetUp();
-		if (mainApp.getBoardPanel().getParkingLotLayout().getNumPieces() == 0) {
-			mainApp.setCurrentAddVehicleSize(Vehicle.carSize);
-		}
-		setVisible(true);
 	}
 			
 	@Override

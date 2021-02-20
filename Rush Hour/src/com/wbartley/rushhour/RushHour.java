@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -14,8 +15,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import static javax.swing.JOptionPane.*;
 
+import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
@@ -28,13 +32,19 @@ import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class RushHour implements ActionListener, MouseListener {
+	private static final String FILE_MENU = "File";
+	private static final String ACTIONS_MENU = "Actions";
+	private static final String HELP_MENU = "Help";
+	private static final String PAUSE_BUTTON = "Pause";
+	private static final String CONTINUE_BUTTON = "Continue";
+	private static final String STOP_BUTTON = "Stop";
 	private static final String SAVE_FILES_DIRECTORY_NAME = "saved";
 	private static final String NEW_LAYOUT_MENU_ITEM = "New Layout";
 	private static final String OPEN_MENU_ITEM = "Open..";
 	private static final String SAVE_MENU_ITEM = "Save..";
 	private static final String SAVE_AS_MENU_ITEM = "Save As..";
-	private static final String RANDOM_PUZZLE_MENU_ITEM = "Random Puzzle..";
 	private static final String SET_UP_LAYOUT_MENU_ITEM = "Set Up Layout..";
+	private static final String RANDOM_PUZZLE_MENU_ITEM = "Random Puzzle..";
 	private static final String FIND_HARDEST_PUZZLE_MENU_ITEM = "Find Hardest Puzzle..";
 	private static final String SOLVE_PUZZLE_MENU_ITEM = "Solve Puzzle";
 	private static final String SHOW_SOLUTION_MENU_ITEM = "Show Solution";
@@ -45,20 +55,34 @@ public class RushHour implements ActionListener, MouseListener {
 	private static RushHour instance;
 	private File saveFilesDirectory;
 	private JFrame mainFrame;
+	private FindHardestPuzzleDialog hardestPuzzleDialog;
+	private GenerateRandomPuzzleDialog randomPuzzleDialog;
+	private SetUpLayoutDialog setUpLayoutDialog;
+	private AboutRushHourDialog aboutRushHourDialog;
 	private MoveList solution = null;
 	private PuzzleDifficulty puzzleDifficulty = null;
 	private int curMove = -1;
 	private JCheckBoxMenuItem showSolution;
+    JButton pauseContinueButton;
+    JButton stopSearchButton;
 	private String supplementalMessage = null;
 	private ParkingLotPanel boardPanel;
 	private boolean setUpLayoutActive = false;
 	private int curAddVehicleSize = 0;
 	private JEditorPane messagesTextArea;
 	private File currentLayoutFile = null;
+	public long permutationCount;
+	public boolean hardestPuzzleSearchInProgress = false;
+	public boolean randomPuzzleSearchInProgress = false;
+	public boolean animationInProgress = false;
 	
 	public RushHour() {
 		saveFilesDirectory = new File(SAVE_FILES_DIRECTORY_NAME);
 		saveFilesDirectory.mkdir();
+		hardestPuzzleDialog = new FindHardestPuzzleDialog(this);
+		randomPuzzleDialog = new GenerateRandomPuzzleDialog(this);
+		setUpLayoutDialog = new SetUpLayoutDialog(this);
+		aboutRushHourDialog = new AboutRushHourDialog();
 	}
 	
 	public void buildAndShowGui(){
@@ -69,7 +93,7 @@ public class RushHour implements ActionListener, MouseListener {
 	    mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	    JMenuBar mainMenu = new JMenuBar();
 
-	    JMenu jmFile = new JMenu("File");
+	    JMenu jmFile = new JMenu(FILE_MENU);
 	    JMenuItem newLayout = new JMenuItem(NEW_LAYOUT_MENU_ITEM);
 	    JMenuItem open = new JMenuItem(OPEN_MENU_ITEM);
 	    JMenuItem save = new JMenuItem(SAVE_MENU_ITEM);
@@ -83,25 +107,36 @@ public class RushHour implements ActionListener, MouseListener {
 	    jmFile.add(exit);
 	    mainMenu.add(jmFile);
 	    
-	    JMenu jmActions = new JMenu("Actions");
-	    JMenuItem generatePuzzle = new JMenuItem(RANDOM_PUZZLE_MENU_ITEM);
+	    JMenu jmActions = new JMenu(ACTIONS_MENU);
 	    JMenuItem inputPuzzle = new JMenuItem(SET_UP_LAYOUT_MENU_ITEM);
+	    JMenuItem generatePuzzle = new JMenuItem(RANDOM_PUZZLE_MENU_ITEM);
 	    JMenuItem findLongestPuzzle = new JMenuItem(FIND_HARDEST_PUZZLE_MENU_ITEM);
 	    JMenuItem solvePuzzle = new JMenuItem(SOLVE_PUZZLE_MENU_ITEM);
 	    showSolution = new JCheckBoxMenuItem(SHOW_SOLUTION_MENU_ITEM);
 	    JMenuItem animateSolution = new JMenuItem(ANIMATE_SOLUTION_MENU_ITEM);
-	    jmActions.add(generatePuzzle);
 	    jmActions.add(inputPuzzle);
+	    jmActions.add(generatePuzzle);
 	    jmActions.add(findLongestPuzzle);
 	    jmActions.add(solvePuzzle);
 	    jmActions.add(showSolution);
 	    jmActions.add(animateSolution);
 	    mainMenu.add(jmActions);
 
-	    JMenu jmHelp = new JMenu("Help");
+	    JMenu jmHelp = new JMenu(HELP_MENU);
 	    JMenuItem jmiAbout = new JMenuItem(ABOUT_MENU_ITEM);
 	    jmHelp.add(jmiAbout);
 	    mainMenu.add(jmHelp);
+	    
+	    mainMenu.add(Box.createHorizontalGlue());
+	    pauseContinueButton = new JButton(PAUSE_BUTTON);
+	    pauseContinueButton.addActionListener(this);
+	    pauseContinueButton.setVisible(false);
+	    mainMenu.add(pauseContinueButton);
+	    
+	    stopSearchButton = new JButton(STOP_BUTTON);
+	    stopSearchButton.addActionListener(this);
+	    stopSearchButton.setVisible(false);
+	    mainMenu.add(stopSearchButton);
 
 	    newLayout.addActionListener(this);
 	    open.addActionListener(this);
@@ -134,6 +169,42 @@ public class RushHour implements ActionListener, MouseListener {
 	    mainFrame.setVisible(true);
 	}
 	
+	public void setHardestPuzzleSearchInProgress(boolean inProgress) {
+		hardestPuzzleSearchInProgress = inProgress;
+		SwingUtilities.invokeLater( new Runnable() {	
+			@Override
+			public void run() {
+				pauseContinueButton.setText(PAUSE_BUTTON);
+				if (inProgress) {
+					pauseContinueButton.setVisible(true);
+					stopSearchButton.setVisible(true);
+				}
+				else {
+					pauseContinueButton.setVisible(false);
+					stopSearchButton.setVisible(false);
+				}
+			}
+		});
+	}
+	
+	public void setRandomPuzzleSearchInProgress(boolean inProgress) {
+		randomPuzzleSearchInProgress = inProgress;
+		SwingUtilities.invokeLater( new Runnable() {	
+			@Override
+			public void run() {
+				pauseContinueButton.setText(PAUSE_BUTTON);
+				if (inProgress) {
+					pauseContinueButton.setVisible(true);
+					stopSearchButton.setVisible(true);
+				}
+				else {
+					pauseContinueButton.setVisible(false);
+					stopSearchButton.setVisible(false);
+				}
+			}
+		});
+	}
+	
 	private class AnimateSolutionRunnable implements Runnable {
 
 		@Override
@@ -142,6 +213,7 @@ public class RushHour implements ActionListener, MouseListener {
 				Thread.sleep(2000);
 			} catch (InterruptedException e) {}
 			if (solution != null) {
+				animationInProgress = true;
 				ParkingLotLayout startingLayout = boardPanel.getParkingLotLayout();
 				ParkingLotLayout layout = new ParkingLotLayout(startingLayout);
 				byte [] moveList = solution.getMoves();
@@ -159,8 +231,22 @@ public class RushHour implements ActionListener, MouseListener {
 				} catch (InterruptedException e) {}
 				curMove = -1;
 				setLayoutSolutionAndMessage(startingLayout, solution, null);
+				animationInProgress = false;
 			}
 		}
+	}
+	
+	public boolean activityInProgress() {
+		if (randomPuzzleSearchInProgress || hardestPuzzleSearchInProgress) {
+			String message = "There is already a " + (randomPuzzleSearchInProgress ? "random puzzle " : "hardest puzzle ") + "search in progress";
+			showMessageDialog(mainFrame, message, "Search in Progress", ERROR_MESSAGE);
+			return true;
+		}
+		else if (animationInProgress) {
+			showMessageDialog(mainFrame, "Wait for animation to finish", "Animation in Progress", ERROR_MESSAGE);
+			return true;
+		}
+		return false;
 	}
 
 	@Override
@@ -169,21 +255,39 @@ public class RushHour implements ActionListener, MouseListener {
 		if (actionCommand.equals(EXIT_MENU_ITEM)){
 			System.exit(0);
 		}
-		else if (actionCommand.equals(RANDOM_PUZZLE_MENU_ITEM)){
-			currentLayoutFile = null;
-			new GenerateRandomPuzzleDialog(this);
-		}
 		else if (actionCommand.equals(SET_UP_LAYOUT_MENU_ITEM)){ 
+			if (activityInProgress()) {
+				return;
+			}
 			if (!setUpLayoutActive) {
 				currentLayoutFile = null;
-				new SetUpLayoutDialog(this);
+				setUpLayoutDialog.setLocationRelativeTo(mainFrame);
+				setUpLayoutDialog.setLocation(new Point(mainFrame.getX() + mainFrame.getWidth(), mainFrame.getY()));
+				startLayoutSetUp();
+				if (getBoardPanel().getParkingLotLayout().getNumPieces() == 0) {
+					setCurrentAddVehicleSize(Vehicle.carSize);
+				}
+				setUpLayoutDialog.setVisible(true);
 			}
 		}
-		else if (actionCommand.equals(FIND_HARDEST_PUZZLE_MENU_ITEM)){
+		else if (actionCommand.equals(RANDOM_PUZZLE_MENU_ITEM)){
+			if (activityInProgress()) {
+				return;
+			}
 			currentLayoutFile = null;
-			new FindHardestPuzzleDialog(this);
+			randomPuzzleDialog.setVisible(true);
+		}
+		else if (actionCommand.equals(FIND_HARDEST_PUZZLE_MENU_ITEM)){
+			if (activityInProgress()) {
+				return;
+			}
+			currentLayoutFile = null;
+			hardestPuzzleDialog.setVisible(true);
 		}
 		else if (actionCommand.equals(SOLVE_PUZZLE_MENU_ITEM)) {
+			if (activityInProgress()) {
+				return;
+			}
 			ParkingLotLayout layout = boardPanel.getParkingLotLayout();
 			if (layout.getNumPieces() == 0) {
 				setSupplementalMessage("Cannot solve layout without any pieces!");
@@ -208,16 +312,23 @@ public class RushHour implements ActionListener, MouseListener {
 			updateMessage();
 		}
 		else if (actionCommand.equals(ANIMATE_SOLUTION_MENU_ITEM)){
+			if (activityInProgress()) {
+				return;
+			}
 			new Thread(new AnimateSolutionRunnable()).start();
 		}
 		else if (actionCommand.equals(ABOUT_MENU_ITEM)) {
-			new AboutRushHourDialog();
+			aboutRushHourDialog.setLocationRelativeTo(mainFrame);
+			aboutRushHourDialog.setVisible(true);;
 		}
 		else if (actionCommand.equals(NEW_LAYOUT_MENU_ITEM)) {
 			currentLayoutFile = null;
 			setLayoutSolutionAndMessage(new ParkingLotLayout(), null, "");
 		}
 		else if (actionCommand.equals(OPEN_MENU_ITEM)) {
+			if (activityInProgress()) {
+				return;
+			}
 			loadFromFile();
 		}
 		else if (actionCommand.equals(SAVE_MENU_ITEM)) {
@@ -229,6 +340,32 @@ public class RushHour implements ActionListener, MouseListener {
 			saveToFile();
 			if (currentLayoutFile == null) {
 				currentLayoutFile = savedLayoutFile;
+			}
+		}
+		else if (actionCommand.equals(PAUSE_BUTTON)) {
+			if (hardestPuzzleSearchInProgress) {
+				hardestPuzzleDialog.pauseSearch(true);
+			}
+			else {
+				randomPuzzleDialog.pauseSearch(true);
+			}
+			pauseContinueButton.setText(CONTINUE_BUTTON);
+		}
+		else if (actionCommand.equals(CONTINUE_BUTTON)) {
+			if (hardestPuzzleSearchInProgress) {
+				hardestPuzzleDialog.pauseSearch(false);
+			}
+			else {
+				randomPuzzleDialog.pauseSearch(false);
+			}
+			pauseContinueButton.setText(PAUSE_BUTTON);
+		}
+		else if (actionCommand.equals(STOP_BUTTON)) {
+			if (hardestPuzzleSearchInProgress) {
+				hardestPuzzleDialog.stopSearch();
+			}
+			else {
+				randomPuzzleDialog.stopSearch();
 			}
 		}
 	}
@@ -399,7 +536,6 @@ public class RushHour implements ActionListener, MouseListener {
 
 	@Override
 	public void mouseReleased(MouseEvent e) {
-		System.out.println("Mouse event");
 		Cursor cursor = boardPanel.getCursor();
 		ParkingLotLayout layout = boardPanel.getParkingLotLayout();
 		if (e.getButton() == MouseEvent.BUTTON1) {
