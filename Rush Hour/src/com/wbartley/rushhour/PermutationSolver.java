@@ -80,6 +80,7 @@ public class PermutationSolver implements LayoutPermuter.PermutationListener {
 	}
 	
 	public void stopSearch() {
+		pauseSearch = false;
 		stopSearch = true;
 	}
 	

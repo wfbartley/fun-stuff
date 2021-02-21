@@ -77,9 +77,10 @@ public class FindHardestPuzzleDialog extends JDialog {
 			    
 		ok.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				mainApp.setHardestPuzzleSearchInProgress(true);
-				setVisible(false);
-				generatePuzzles();
+				if (generatePuzzles()) {
+					mainApp.setHardestPuzzleSearchInProgress(true);
+					setVisible(false);
+				}
 			}
 		});
 		cancel.addActionListener(new ActionListener() {
@@ -142,25 +143,29 @@ public class FindHardestPuzzleDialog extends JDialog {
 		}
 	}
 	
-	public void generatePuzzles() {
+	public boolean generatePuzzles() {
 		String carsText = numCarsTextField.getText();
 		String trucksText = numTrucksTextField.getText();
 		int numCars = carsText.isEmpty() ? 0 : Integer.parseInt(carsText);
 		int numTrucks = trucksText.isEmpty() ? 0 : Integer.parseInt(trucksText);
 		if (numCars + numTrucks < 4) {
 			mainApp.setSupplementalMessage("Puzzle must contain at least four non-red vehicles");
+			return false;
 		}
 		else if (numTrucks > Vehicle.getMaxTrucks()) {
 			mainApp.setSupplementalMessage("Puzzle may contain no more than " + Vehicle.getMaxTrucks() + " trucks");
+			return false;
 		}
 		else if (numCars > Vehicle.getMaxCars()) {
 			mainApp.setSupplementalMessage("Puzzle may contain no more than " + Vehicle.getMaxCars() + "non-red cars");
+			return false;
 		}
 		else {
 			mainApp.setSupplementalMessage("Generating puzzles..");
 			puzzleGenerator = new PuzzleGenerator(numCars, numTrucks);
 			Thread puzzleGeneratorThread = new Thread(puzzleGenerator);
 			puzzleGeneratorThread.start();
+			return true;
 		}
 	}
 	
