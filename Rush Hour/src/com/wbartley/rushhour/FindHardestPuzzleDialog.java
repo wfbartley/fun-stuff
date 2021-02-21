@@ -113,7 +113,7 @@ public class FindHardestPuzzleDialog extends JDialog {
 
 		@Override
 		public void run() {
-			permutationSolver = new PermutationSolver(3, 2000000, this, 0, null, true);
+			permutationSolver = new PermutationSolver(4, 4000000, this, 0, null, true);
 			LayoutPermuter permuter = new LayoutPermuter(new ParkingLotLayout(), numCars, numTrucks, permutationSolver);
 			permuter.generatePermutations();
 			permutationSolver.exit();
@@ -137,8 +137,6 @@ public class FindHardestPuzzleDialog extends JDialog {
 			}
 			else {
 				mainApp.setSupplementalMessage("100% Finished!");
-				System.out.println("Most promising unsolvable puzzle:");
-				System.out.println(permutationSolver.getMostPromisingUnsolvablePuzzle());
 			}
 		}
 	}

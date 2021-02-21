@@ -313,6 +313,7 @@ public class ParkingLotLayout implements Comparable<ParkingLotLayout>, Serializa
 	
 	@Override
 	public boolean equals(Object o) {
+		if (o == null) return false;
 		ParkingLotLayout other = (ParkingLotLayout)o;
 		return firstEightPieces == other.firstEightPieces && secondEightPieces == other.secondEightPieces;
 	}

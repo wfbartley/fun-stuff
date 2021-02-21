@@ -1,8 +1,8 @@
 package com.wbartley.rushhour;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
+import java.util.Collections;
+import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -14,9 +14,7 @@ public class PermutationSolver implements LayoutPermuter.PermutationListener {
 		public void progressUpdate(int percentComplete);
 	}
 	private MoveList maxSolution = null;
-	private int unsolvablePositionsSize;
-	private List<HashSet<ParkingLotLayout>> unsolvablePositions;
-	private int curUnsolvableHashSet = 0;
+	private Set<ParkingLotLayout> unsolvablePositions;
 	private Notification notification;
 	private PuzzleDifficulty desiredDifficulty;
 	private int minNumberOfMoves;
@@ -26,11 +24,10 @@ public class PermutationSolver implements LayoutPermuter.PermutationListener {
 	private ArrayBlockingQueue<Solver> finishedSolverQueue;
 	private ThreadPoolExecutor executor;
 	private long startTime;
+	private int highWaterMark;
 	private long numPositionsExamined = 0;
 	private long numShortCircuited = 0;
 	private long totalUnsolvedMaintenanceTime = 0;
-	private int maxPositionsInUnsolvablePuzzle = 0;
-	private ParkingLotLayout mostPromisingUnsolvablePuzzle;
 	private boolean debug;
 	private boolean pauseSearch = false;
 	private boolean stopSearch = false;
@@ -40,11 +37,8 @@ public class PermutationSolver implements LayoutPermuter.PermutationListener {
 		this.minNumberOfMoves = minNumberOfMoves;
 		this.desiredDifficulty = desiredDifficulty;
 		this.notification = notification;
-		this.unsolvablePositionsSize = initialUnsolvablePositionsSetSize;
-		unsolvablePositions = new ArrayList<HashSet<ParkingLotLayout>>(4);
-		for (int i = 0; i < 4; i++) {
-			unsolvablePositions.add(new HashSet<ParkingLotLayout>(initialUnsolvablePositionsSetSize));
-		}
+		unsolvablePositions = Collections.newSetFromMap(new WeakHashMap<ParkingLotLayout, Boolean>(initialUnsolvablePositionsSetSize));
+		highWaterMark = 9 * initialUnsolvablePositionsSetSize / 10;
 		finishedSolverQueue = new ArrayBlockingQueue<Solver>(numThreads+1);
 		executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(numThreads);
 		startTime = System.currentTimeMillis();
@@ -70,11 +64,7 @@ public class PermutationSolver implements LayoutPermuter.PermutationListener {
 	public long getNumShortCircuited() {
 		return numShortCircuited;
 	}
-	
-	public ParkingLotLayout getMostPromisingUnsolvablePuzzle() {
-		return mostPromisingUnsolvablePuzzle;
-	}
-	
+		
 	public void pauseSearch(boolean pause) {
 		pauseSearch = pause;
 	}
@@ -88,22 +78,14 @@ public class PermutationSolver implements LayoutPermuter.PermutationListener {
 		System.out.println("Num positions examined = " + numPositionsExamined + ", short circuited = " + numShortCircuited);
 		System.out.println("Positions per second = " + numPositionsExamined * 1000 / getRunDuration());
 		System.out.println("Total time unsolved add = " + totalUnsolvedMaintenanceTime / 1000000 + "ms / " + getRunDuration() + "ms");
-		int totalUnsolvable = 0;
-		for (HashSet<ParkingLotLayout> up : unsolvablePositions) {
-			totalUnsolvable += up.size();
-		}
-		System.out.println("Num unsolved in set = " + totalUnsolvable);
-		System.out.println("Most promising unsolvable: " + maxPositionsInUnsolvablePuzzle);
-		System.out.println(mostPromisingUnsolvablePuzzle);
+		System.out.println("Num unsolved in set = " + unsolvablePositions.size());
 	}
 	
 	public void resetUnsolvablePositions() {
 		if (debug) {
 			dumpStats();
 		}
-		for (HashSet<ParkingLotLayout> us : unsolvablePositions) {
-			us.clear();
-		}
+		unsolvablePositions.clear();
 		startTime = System.currentTimeMillis();
 		numPositionsExamined = 0;
 		numShortCircuited = 0;
@@ -165,34 +147,17 @@ public class PermutationSolver implements LayoutPermuter.PermutationListener {
 		}
 		else {
 			long start = System.nanoTime();
-			HashSet<ParkingLotLayout> unsolvable = unsolvablePositions.get(curUnsolvableHashSet);
-			int numPositions = solver.getNumPositionsExamined();
-			if (numPositions > maxPositionsInUnsolvablePuzzle) {
-				maxPositionsInUnsolvablePuzzle = numPositions;
-				mostPromisingUnsolvablePuzzle = solver.getLayout();
+			if (unsolvablePositions.size() > highWaterMark) {
+				unsolvablePositions.clear();
 			}
-			unsolvable.addAll(solver.getPositionsExamined());
-			if (unsolvable.size() * 100 / unsolvablePositionsSize > 90){
-				curUnsolvableHashSet++;
-				if (curUnsolvableHashSet == unsolvablePositions.size()) curUnsolvableHashSet = 0;
-				unsolvablePositions.get(curUnsolvableHashSet).clear();
-			}
+			unsolvablePositions.addAll(solver.getPositionsExamined());
 			totalUnsolvedMaintenanceTime += System.nanoTime() - start;
 		}
 		return stopSearch;
 	}
 	
 	public boolean isInUnsolvables(ParkingLotLayout layout) {
-		int i = curUnsolvableHashSet;
-		do {
-			HashSet<ParkingLotLayout> unsolvable = unsolvablePositions.get(i);
-			if (unsolvable.contains(layout)) return true;
-			i--;
-			if (i < 0) {
-				i = unsolvablePositions.size() - 1;
-			}
-		} while (i != curUnsolvableHashSet);
-		return false;
+		return unsolvablePositions.contains(layout);
 	}
 	
 	@Override
