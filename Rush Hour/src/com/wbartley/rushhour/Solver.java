@@ -1,7 +1,7 @@
 package com.wbartley.rushhour;
 
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
+import java.util.HashSet;
 import java.util.Set;
 
 public class Solver {
@@ -16,18 +16,22 @@ public class Solver {
 	private ParkingLotLayout originalLayout;
 	private Set<ParkingLotLayout> uniquePositions;
 	private MoveList bestSolution = null;
-	private static int maxPositionsExamined;
+	
+	public Solver() {
+	}
 	
 	public Solver(ParkingLotLayout layout) {
 		bestSolution = null;
-		this.originalLayout = layout;
-		uniquePositions = new LinkedHashSet<ParkingLotLayout>(2048);
+		originalLayout = new ParkingLotLayout(layout);
+		uniquePositions = new HashSet<ParkingLotLayout>();
+		uniquePositions.add(originalLayout);
 	}
 	
 	public void reset(ParkingLotLayout layout) {
 		originalLayout = new ParkingLotLayout(layout);
 		bestSolution = null;
-		uniquePositions.clear();
+		uniquePositions = new HashSet<ParkingLotLayout>();
+		uniquePositions.add(originalLayout);
 	}
 	
 	private void checkForBestSolution(MoveList moveList) {
@@ -65,9 +69,6 @@ public class Solver {
 			terminalEntries.clear();
 			terminalEntries = (terminalEntries == terminalEntries1) ? terminalEntries2 : terminalEntries1;
 		}
-		if (uniquePositions.size() > maxPositionsExamined) {
-			maxPositionsExamined = uniquePositions.size();
-		}
 	}
 	
 	private void solve(ParkingLotLayout layout, MoveList moveList, ArrayList<TerminalEntry> terminalEntries) {
@@ -94,17 +95,8 @@ public class Solver {
 		return bestSolution;
 	}
 	
-	public Set<ParkingLotLayout> getPositionsExamined(){
-		return uniquePositions;
-	}
-	
 	public ParkingLotLayout getLayout() {
 		return originalLayout;
 	}
-	
-	public static int getMaxPositionsExamined() {
-		return maxPositionsExamined;
-	}
-	
-		
+				
 }

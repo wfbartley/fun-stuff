@@ -1,8 +1,7 @@
 package com.wbartley.rushhour;
 
-import java.util.Collections;
+import java.util.ArrayDeque;
 import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -19,27 +18,27 @@ public class PermutationSolver implements LayoutPermuter.PermutationListener {
 	private PuzzleDifficulty desiredDifficulty;
 	private int minNumberOfMoves;
 	private boolean desiredDifficultyPuzzleFound = false;
+	private ArrayBlockingQueue<SolverThreadRunnable> finishedSolverQueue;
 	private int numThreads;
-	private int numActiveThreads = 0;
-	private ArrayBlockingQueue<Solver> finishedSolverQueue;
+	private ArrayDeque<SolverThreadRunnable> availableRunnables;
 	private ThreadPoolExecutor executor;
 	private long startTime;
-	private int highWaterMark;
 	private long numPositionsExamined = 0;
 	private long numShortCircuited = 0;
-	private long totalUnsolvedMaintenanceTime = 0;
 	private boolean debug;
 	private boolean pauseSearch = false;
 	private boolean stopSearch = false;
 	
-	public PermutationSolver(int numThreads, int initialUnsolvablePositionsSetSize, Notification notification, int minNumberOfMoves, PuzzleDifficulty desiredDifficulty, boolean debug) {
+	public PermutationSolver(int numThreads, Notification notification, int minNumberOfMoves, PuzzleDifficulty desiredDifficulty, boolean debug) {
 		this.numThreads = numThreads;
+		availableRunnables = new ArrayDeque<SolverThreadRunnable>(numThreads);
+		for (int i = 0; i < numThreads; i++) {
+			availableRunnables.add(new SolverThreadRunnable());
+		}
 		this.minNumberOfMoves = minNumberOfMoves;
 		this.desiredDifficulty = desiredDifficulty;
 		this.notification = notification;
-		unsolvablePositions = Collections.newSetFromMap(new WeakHashMap<ParkingLotLayout, Boolean>(initialUnsolvablePositionsSetSize));
-		highWaterMark = 9 * initialUnsolvablePositionsSetSize / 10;
-		finishedSolverQueue = new ArrayBlockingQueue<Solver>(numThreads+1);
+		finishedSolverQueue = new ArrayBlockingQueue<SolverThreadRunnable>(numThreads+1);
 		executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(numThreads);
 		startTime = System.currentTimeMillis();
 		this.debug = debug;
@@ -75,10 +74,8 @@ public class PermutationSolver implements LayoutPermuter.PermutationListener {
 	}
 	
 	public void dumpStats() {
-		System.out.println("Num positions examined = " + numPositionsExamined + ", short circuited = " + numShortCircuited);
+		System.out.println("Num positions examined = " + numPositionsExamined);
 		System.out.println("Positions per second = " + numPositionsExamined * 1000 / getRunDuration());
-		System.out.println("Total time unsolved add = " + totalUnsolvedMaintenanceTime / 1000000 + "ms / " + getRunDuration() + "ms");
-		System.out.println("Num unsolved in set = " + unsolvablePositions.size());
 	}
 	
 	public void resetUnsolvablePositions() {
@@ -89,7 +86,6 @@ public class PermutationSolver implements LayoutPermuter.PermutationListener {
 		startTime = System.currentTimeMillis();
 		numPositionsExamined = 0;
 		numShortCircuited = 0;
-		totalUnsolvedMaintenanceTime = 0;
 	}
 	
 	private boolean checkForMaxSolution(MoveList solution) {
@@ -103,19 +99,22 @@ public class PermutationSolver implements LayoutPermuter.PermutationListener {
 	private class SolverThreadRunnable implements Runnable {
 		private Solver solver;
 		
-		public SolverThreadRunnable(ParkingLotLayout layout) {
-			solver = new Solver(layout);
+		public SolverThreadRunnable() {
+			solver = new Solver();
 		}
 		
-		public SolverThreadRunnable(ParkingLotLayout layout, Solver solver) {
-			this.solver = solver;
+		public Solver getSolver() {
+			return solver;
+		}
+		
+		public void reset(ParkingLotLayout layout) {
 			solver.reset(layout);
 		}
 
 		@Override
 		public void run() {
 			solver.solve();
-			finishedSolverQueue.offer(solver);
+			finishedSolverQueue.offer(this);
 		}
 		
 	}
@@ -145,14 +144,6 @@ public class PermutationSolver implements LayoutPermuter.PermutationListener {
 				}
 			}
 		}
-		else {
-			long start = System.nanoTime();
-			if (unsolvablePositions.size() > highWaterMark) {
-				unsolvablePositions.clear();
-			}
-			unsolvablePositions.addAll(solver.getPositionsExamined());
-			totalUnsolvedMaintenanceTime += System.nanoTime() - start;
-		}
 		return stopSearch;
 	}
 	
@@ -171,26 +162,36 @@ public class PermutationSolver implements LayoutPermuter.PermutationListener {
 		if (debug && numPositionsExamined % 1000000 == 0) {
 			dumpStats();
 		}
-		if (isInUnsolvables(layout)) {
-			numShortCircuited++;
-			return true;
-		}
-		if (numActiveThreads < numThreads) {
-			numActiveThreads++;
-			executor.execute(new SolverThreadRunnable(layout));
+		if (!availableRunnables.isEmpty()) {
+			SolverThreadRunnable runnable = availableRunnables.pollLast();
+			runnable.reset(layout);
+			executor.execute(runnable);
 		}
 		else {
-			Solver solver = null;
+			SolverThreadRunnable solverThread = null;
 			try {
-				solver = finishedSolverQueue.take();
+				solverThread = finishedSolverQueue.take();
+				availableRunnables.add(solverThread);
+				Solver solver = solverThread.getSolver();
+				
 				if (processSolverResult(solver)) {
 					// processSolverResult returns true when it finds the desired solution difficulty
 					return false;
 				}
 			} catch (InterruptedException e) {}
-			executor.execute(new SolverThreadRunnable(layout, solver));
 		}
 		return true;
+	}
+	
+	public void emptyPendingThreads() {
+		SolverThreadRunnable solverThread = null;
+		try {
+			while (availableRunnables.size() < numThreads) {
+				solverThread = finishedSolverQueue.take();
+				availableRunnables.add(solverThread);
+				processSolverResult(solverThread.getSolver());
+			}
+		} catch (InterruptedException e) {}
 	}
 	
 	@Override
