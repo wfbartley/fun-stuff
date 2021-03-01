@@ -108,7 +108,6 @@ public class LayoutPermuter {
 	}
 	
 	private void checkForProgressUpdate() {
-		permutationCount++;
 		int percent = (int)(permutationCount * 100L / totalPermutations);
 		if (percent != percentComplete) {
 			percentComplete = percent;
@@ -129,8 +128,8 @@ public class LayoutPermuter {
 					if (!layout.isUnusable()) {
 						if (nextVehicle == numVehicles) {
 							if (!layout.redCarCanExit()) {
+								permutationCount++;
 								keepGoing = listener.processLayout(layout);
-								checkForProgressUpdate();
 							}
 						}
 						else {
@@ -151,8 +150,8 @@ public class LayoutPermuter {
 					if (!layout.isUnusable()) {
 						if (nextVehicle == numVehicles) {
 							if (!layout.redCarCanExit()) {
+								permutationCount++;
 								keepGoing = listener.processLayout(layout);
-								checkForProgressUpdate();
 							}
 						}
 						else {
@@ -168,5 +167,6 @@ public class LayoutPermuter {
 				}
 			}
 		}
+		checkForProgressUpdate();
 	}
 }

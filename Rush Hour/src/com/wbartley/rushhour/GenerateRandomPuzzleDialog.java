@@ -178,7 +178,7 @@ public class GenerateRandomPuzzleDialog extends JDialog {
 		@Override
 		public void run() {
 			Random random = new Random(System.nanoTime());
-			permutationSolver = new PermutationSolver(4, this, minNumMoves, desiredDifficulty, false);
+			permutationSolver = new PermutationSolver(8, this, minNumMoves, desiredDifficulty, false);
 			do {
 				int remainingNumCars = numCars;
 				int remainingNumTrucks = numTrucks;
@@ -202,7 +202,7 @@ public class GenerateRandomPuzzleDialog extends JDialog {
 				ParkingLotLayout layout = ParkingLotLayout.generateRandom(subsetNumCars, subsetNumTrucks, totalNumVehicles);
 				LayoutPermuter permuter = new LayoutPermuter(layout, remainingNumCars, remainingNumTrucks, permutationSolver);
 				permuter.generatePermutations();
-				permutationSolver.resetUnsolvablePositions();
+				permutationSolver.emptyPendingThreads();
 			} while (!permutationSolver.isDesiredDifficultyPuzzleFound() && !interruptSearch);
 			permutationSolver.exit();
 			mainApp.setRandomPuzzleSearchInProgress(false);

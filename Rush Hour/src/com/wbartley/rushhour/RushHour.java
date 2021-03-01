@@ -175,7 +175,7 @@ public class RushHour implements ActionListener, MouseListener {
 			@Override
 			public void run() {
 				pauseContinueButton.setText(PAUSE_BUTTON);
-				if (inProgress) {
+				if (hardestPuzzleSearchInProgress) {
 					pauseContinueButton.setVisible(true);
 					stopSearchButton.setVisible(true);
 				}
