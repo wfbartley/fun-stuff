@@ -5,10 +5,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class Solver {
-	private class TerminalEntry {
+	private class LeafNode {
 		public ParkingLotLayout layout;
 		public MoveList moveList;
-		public TerminalEntry(ParkingLotLayout layout, MoveList moveList) {
+		public LeafNode(ParkingLotLayout layout, MoveList moveList) {
 			this.layout = layout;
 			this.moveList = moveList;
 		}
@@ -40,7 +40,7 @@ public class Solver {
 		}
 	}
 	
-	private ParkingLotLayout tryMove(ParkingLotLayout layout, MoveList moveList, int pieceIdx, boolean upOrLeft, int distance, ArrayList<TerminalEntry> terminalEntries) {
+	private ParkingLotLayout tryMove(ParkingLotLayout layout, MoveList moveList, int pieceIdx, boolean upOrLeft, int distance, ArrayList<LeafNode> leafNodes) {
 		byte move = Move.create(pieceIdx, upOrLeft, distance);
 		ParkingLotLayout result;
 		if ((result = layout.tryMove(move)) != null) {
@@ -50,7 +50,7 @@ public class Solver {
 			}
 			else {
 				if (uniquePositions.add(result)) {
-					terminalEntries.add(new TerminalEntry(result, newMoveList));
+					leafNodes.add(new LeafNode(result, newMoveList));
 				}
 			}
 		}
@@ -58,29 +58,29 @@ public class Solver {
 	}
 		
 	public void solve() {
-		ArrayList<TerminalEntry> terminalEntries1 = new ArrayList<TerminalEntry>(500);
-		ArrayList<TerminalEntry> terminalEntries2 = new ArrayList<TerminalEntry>(500);
-		ArrayList<TerminalEntry> terminalEntries = terminalEntries1;
-		solve(originalLayout, new MoveList(0), terminalEntries);
-		while (bestSolution == null && !terminalEntries.isEmpty()) {
-			for (TerminalEntry entry : terminalEntries) {
-				solve(entry.layout, entry.moveList, (terminalEntries == terminalEntries1) ? terminalEntries2 : terminalEntries1);
+		ArrayList<LeafNode> leafNodes1 = new ArrayList<LeafNode>(500);
+		ArrayList<LeafNode> leafNodes2 = new ArrayList<LeafNode>(500);
+		ArrayList<LeafNode> leafNodes = leafNodes1;
+		solve(originalLayout, new MoveList(0), leafNodes);
+		while (bestSolution == null && !leafNodes.isEmpty()) {
+			for (LeafNode entry : leafNodes) {
+				solve(entry.layout, entry.moveList, (leafNodes == leafNodes1) ? leafNodes2 : leafNodes1);
 			}
-			terminalEntries.clear();
-			terminalEntries = (terminalEntries == terminalEntries1) ? terminalEntries2 : terminalEntries1;
+			leafNodes.clear();
+			leafNodes = (leafNodes == leafNodes1) ? leafNodes2 : leafNodes1;
 		}
 	}
 	
-	private void solve(ParkingLotLayout layout, MoveList moveList, ArrayList<TerminalEntry> terminalEntries) {
+	private void solve(ParkingLotLayout layout, MoveList moveList, ArrayList<LeafNode> leafNodes) {
 		int lastPieceMoved = moveList.getLastMoveIdx();
 		for (int i = 0; i < layout.getNumPieces(); i++) {
 			if (i != lastPieceMoved) {
 				int distance = 1;
-				while (tryMove(layout, moveList, i, true, distance, terminalEntries) != null) {
+				while (tryMove(layout, moveList, i, true, distance, leafNodes) != null) {
 					distance++;
 				}
 				distance = 1;
-				while (tryMove(layout, moveList, i, false, distance, terminalEntries) != null) {
+				while (tryMove(layout, moveList, i, false, distance, leafNodes) != null) {
 					distance++;
 				}
 			}
