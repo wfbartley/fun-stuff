@@ -178,7 +178,7 @@ public class GenerateRandomPuzzleDialog extends JDialog {
 		@Override
 		public void run() {
 			Random random = new Random(System.nanoTime());
-			permutationSolver = new PermutationSolver(8, this, minNumMoves, desiredDifficulty, false);
+			permutationSolver = new PermutationSolver(8, this, minNumMoves, desiredDifficulty);
 			do {
 				int remainingNumCars = numCars;
 				int remainingNumTrucks = numTrucks;

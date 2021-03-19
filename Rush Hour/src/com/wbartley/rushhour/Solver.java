@@ -23,14 +23,14 @@ public class Solver {
 	public Solver(ParkingLotLayout layout) {
 		bestSolution = null;
 		originalLayout = new ParkingLotLayout(layout);
-		uniquePositions = new HashSet<ParkingLotLayout>();
+		uniquePositions = new HashSet<ParkingLotLayout>(64);
 		uniquePositions.add(originalLayout);
 	}
 	
 	public void reset(ParkingLotLayout layout) {
 		originalLayout = new ParkingLotLayout(layout);
 		bestSolution = null;
-		uniquePositions = new HashSet<ParkingLotLayout>();
+		uniquePositions = new HashSet<ParkingLotLayout>(64);
 		uniquePositions.add(originalLayout);
 	}
 	
