@@ -50,14 +50,14 @@ public class DistStatistic implements Statistic {
 		}
 		else {
 			if (suit == null) {
-				builder.append(String.format(handDirection + " Avg " + suit + " Distribution %.2f\n", avgDist[handDirection.ordinal()][suit.ordinal()]));
-			}
-			else {
 				builder.append(handDirection + " Avg Distribution ");
 				for (Suit suitVal : Suit.values()) {
 					builder.append(String.format("%.2f ", avgDist[handDirection.ordinal()][suitVal.ordinal()]));
 				}
 				builder.append("\n");
+			}
+			else {
+				builder.append(String.format(handDirection + " Avg " + suit + " Distribution %.2f\n", avgDist[handDirection.ordinal()][suit.ordinal()]));
 			}
 		}
 		return builder.toString();

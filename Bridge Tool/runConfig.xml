@@ -1,7 +1,4 @@
-<run xmlns="http://www.wbartley.com/BridgeTool"
-     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-     xsi:schemaLocation="http://www.wbartley.com/BridgeTool bridgetool.xsd"
-     runLength="16"
+<!-- 
      includePbnHeader="false"
      includeDate="true"
      includeEventAndSite="true"
@@ -9,25 +6,40 @@
      includeScoring="true"
      includeResultInfo="false"
      includeDdAnalysis="false"
-     dumpEachSample="false"
      pbnFilename="junko"
      dealer="useBoardNumber"
+     vulnerability="useBoardNumber"
+-->
+
+
+<run xmlns="http://www.wbartley.com/BridgeTool"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:schemaLocation="http://www.wbartley.com/BridgeTool bridgetool.xsd"
+     runLength="500"
+     specificCards="N:SK,E:SAQT76HQ9DAKC7653"
+     dumpEachSample="false"
+     includePbnHeader="false"
+     includeDate="true"
+     includeEventAndSite="true"
+     includePlayerInfo="true"
+     includeScoring="true"
+     includeResultInfo="false"
+     includeDdAnalysis="false"
+     dealer="useBoardNumber"
      vulnerability="useBoardNumber">
-    <!--
     <constraint>
    		<AND>
-   			<POINTS dirs="S" min="10" max="12"/>
-   			<DIST dir="S" suit="S" min="4"/>
+   			<HCP dir="N" min="6" max="10"/>
+   			<DIST dir="N" suit="S" min="6" max="6"/>
+   			<DIST dir="N" suit="H" max="3"/>
+   			<DIST dir="N" suit="D" max="3"/>
+   			<DIST dir="N" suit="C" max="3"/>
+   			<MAKES contract="3N" dirs="E"/>
    		</AND>
     </constraint>
     <collectStats>
-        <CONTRACT dir="N" contract="4S"/>
+        <CONTRACT dir="N" contract="2S"/>
+        <POINTS dir="W"/>
+        <DIST dir="W"/>
     </collectStats>
-   	<constraint>
-		<OR>
-			<include filename="isJacoby2NT.xml"/>
-			<include filename="isSplinter.xml"/>
-		</OR>
-	</constraint>
-	-->
 </run>
